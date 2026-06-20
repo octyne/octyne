@@ -3,9 +3,9 @@ package app
 import (
 	"time"
 
+	"github.com/usekeel/keel/internal/adapters/openai"
 	"github.com/usekeel/keel/internal/gateway"
 	"github.com/usekeel/keel/internal/providers"
-	openai "github.com/usekeel/keel/internal/providers/openaicompatible"
 	"github.com/usekeel/keel/internal/server"
 )
 
