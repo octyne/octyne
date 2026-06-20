@@ -16,25 +16,19 @@ type Server struct {
 }
 
 func New() *Server {
+	cfg := providers.Config{
+		Name:    "openai",
+		BaseURL: "https://api.openai.com/v1",
+		Timeout: 30 * time.Second,
+	}
 	providerRegistry := providers.NewRegistry()
 
 	providerRegistry.Register(
 		"openai",
-		&providers.Provider{
-			Name: "openai",
-			Config: providers.Config{
-				Name:    "openai",
-				BaseURL: "https://api.openai.com/v1",
-				Timeout: 30 * time.Second,
-			},
-			Adapter: openai.New(
-				providers.Config{
-					Name:    "openai",
-					BaseURL: "https://api.openai.com/v1",
-					Timeout: 30 * time.Second,
-				},
-			),
-		},
+		providers.New(
+			cfg,
+			openai.New(cfg),
+		),
 	)
 
 	gateway := gateway.New(providerRegistry)
