@@ -1,7 +1,9 @@
 package openai
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/usekeel/keel/internal/providers"
@@ -27,7 +29,23 @@ func (a *Adapter) Chat(
 	req types.ChatCompletionRequest,
 ) (*types.ChatCompletionResponse, error) {
 	openAIReq := toChatCompletionRequest(req)
-	_ = openAIReq
+
+	body, err := json.Marshal(openAIReq)
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		a.config.BaseURL+"chat/completions",
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
 
 	return &types.ChatCompletionResponse{
 		ID: "chatcmpl_openai",
