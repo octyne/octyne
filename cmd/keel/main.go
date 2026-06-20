@@ -1,32 +1,14 @@
 package main
 
 import (
-	"net/http"
+	"github.com/usekeel/keel/internal/server"
 	"log"
-	"encoding/json"
 )
 
-func healthHandler(w http.ResponseWriter, r *http.Request){
-	response := map[string]string{
-		"status": "ok",
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	if err := json.NewEncoder(w).Encode(response); err!=nil{
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-	}
-
-}
-
 func main() {
-	mux := http.NewServeMux()
+	srv := server.New()
 
-	mux.HandleFunc("GET /health", healthHandler)
-
-	log.Println("Keel starting on :3000")
-
-	if err := http.ListenAndServe(":3000", mux); err != nil {
+	if err := srv.Start(":3000"); err != nil {
 		log.Fatal(err)
 	}
 }
