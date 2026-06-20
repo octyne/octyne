@@ -3,15 +3,21 @@ package server
 import (
 	"log"
 	"net/http"
+
+	"github.com/usekeel/keel/internal/gateway"
 )
 
 type Server struct {
-	mux *http.ServeMux
+	mux     *http.ServeMux
+	gateway *gateway.Service
 }
 
 func New() *Server {
+	gateway := gateway.New()
+
 	s := &Server{
-		mux: http.NewServeMux(),
+		mux:     http.NewServeMux(),
+		gateway: gateway,
 	}
 
 	s.routes()
