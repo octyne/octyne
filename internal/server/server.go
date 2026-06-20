@@ -6,6 +6,7 @@ import (
 
 	"github.com/usekeel/keel/internal/gateway"
 	"github.com/usekeel/keel/internal/providers"
+	"github.com/usekeel/keel/internal/providers/openaicompatible"
 )
 
 type Server struct {
@@ -15,6 +16,11 @@ type Server struct {
 
 func New() *Server {
 	providerRegistry := providers.NewRegistry()
+
+	providerRegistry.Register(
+		"openai",
+		openaicompatible.New(),
+	)
 
 	gateway := gateway.New(providerRegistry)
 
