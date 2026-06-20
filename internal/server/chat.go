@@ -25,7 +25,10 @@ func (s *Server) chatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := s.gateway.Chat(req)
+	resp, err := s.gateway.Chat(
+		r.Context(),
+		req,
+	)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

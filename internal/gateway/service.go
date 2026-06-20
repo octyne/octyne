@@ -19,7 +19,10 @@ func New(providers *providers.Registry) *Service {
 	}
 }
 
-func (s *Service) Chat(req types.ChatCompletionRequest) (*types.ChatCompletionResponse, error) {
+func (s *Service) Chat(
+	ctx context.Context,
+	req types.ChatCompletionRequest,
+) (*types.ChatCompletionResponse, error) {
 
 	model, ok := registry.Get(req.Model)
 	if !ok {
@@ -31,8 +34,12 @@ func (s *Service) Chat(req types.ChatCompletionRequest) (*types.ChatCompletionRe
 		return nil, errors.New("provider not found")
 	}
 
+	if provider.Adapter == nil {
+		return nil, errors.New("provider adapter not configured")
+	}
+
 	return provider.Adapter.Chat(
-		context.Background(),
+		ctx,
 		req,
 	)
 }
