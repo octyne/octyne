@@ -7,6 +7,7 @@ import (
 
 	"github.com/usekeel/keel/internal/gateway"
 	"github.com/usekeel/keel/internal/providers"
+	openai "github.com/usekeel/keel/internal/providers/openaicompatible"
 )
 
 type Server struct {
@@ -26,6 +27,13 @@ func New() *Server {
 				BaseURL: "https://api.openai.com/v1",
 				Timeout: 30 * time.Second,
 			},
+			Adapter: openai.New(
+				providers.Config{
+					Name:    "openai",
+					BaseURL: "https://api.openai.com/v1",
+					Timeout: 30 * time.Second,
+				},
+			),
 		},
 	)
 

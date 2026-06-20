@@ -1,4 +1,4 @@
-package openaicompatible
+package openai
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 	"github.com/usekeel/keel/internal/types"
 )
 
-type Provider struct {
+type Adapter struct {
 	config providers.Config
 	client *http.Client
 }
 
-func New(config providers.Config) *Provider {
-	return &Provider{
+func New(config providers.Config) *Adapter {
+	return &Adapter{
 		config: config,
 		client: &http.Client{
 			Timeout: config.Timeout,
@@ -22,11 +22,11 @@ func New(config providers.Config) *Provider {
 	}
 }
 
-func (p *Provider) Chat(
+func (a *Adapter) Chat(
 	ctx context.Context,
 	req types.ChatCompletionRequest,
 ) (*types.ChatCompletionResponse, error) {
 	return &types.ChatCompletionResponse{
-		ID: "chatcmple_openai",
+		ID: "chatcmpl_openai",
 	}, nil
 }
