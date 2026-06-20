@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/usekeel/keel/internal/gateway"
 	"github.com/usekeel/keel/internal/providers"
@@ -19,7 +20,13 @@ func New() *Server {
 
 	providerRegistry.Register(
 		"openai",
-		openaicompatible.New(),
+		openaicompatible.New(
+			providers.Config{
+				Name:    "openai",
+				BaseURL: "https://api.openai.com/v1",
+				Timeout: 30 * time.Second,
+			},
+		),
 	)
 
 	gateway := gateway.New(providerRegistry)

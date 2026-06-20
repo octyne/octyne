@@ -2,14 +2,24 @@ package openaicompatible
 
 import (
 	"context"
+	"net/http"
 
+	"github.com/usekeel/keel/internal/providers"
 	"github.com/usekeel/keel/internal/types"
 )
 
-type Provider struct{}
+type Provider struct {
+	config providers.Config
+	client *http.Client
+}
 
-func New() *Provider {
-	return &Provider{}
+func New(config providers.Config) *Provider {
+	return &Provider{
+		config: config,
+		client: &http.Client{
+			Timeout: config.Timeout,
+		},
+	}
 }
 
 func (p *Provider) Chat(
