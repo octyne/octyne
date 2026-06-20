@@ -7,7 +7,7 @@ import (
 	"github.com/usekeel/keel/internal/types"
 )
 
-func chatHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) chatHandler(w http.ResponseWriter, r *http.Request) {
 	var req types.ChatCompletionRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -22,6 +22,11 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 
 	if len(req.Messages) == 0 {
 		http.Error(w, "messages are required", http.StatusBadRequest)
+		return
+	}
+
+	if err := s.gateway.Chat(req); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
