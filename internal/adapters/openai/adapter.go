@@ -26,6 +26,9 @@ func (a *Adapter) Chat(
 	ctx context.Context,
 	req types.ChatCompletionRequest,
 ) (*types.ChatCompletionResponse, error) {
+	openAIReq := toChatCompletionRequest(req)
+	_ = openAIReq
+
 	return &types.ChatCompletionResponse{
 		ID: "chatcmpl_openai",
 	}, nil
