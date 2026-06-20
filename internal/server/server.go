@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/usekeel/keel/internal/gateway"
+	"github.com/usekeel/keel/internal/providers"
 )
 
 type Server struct {
@@ -13,7 +14,9 @@ type Server struct {
 }
 
 func New() *Server {
-	gateway := gateway.New()
+	providerRegistry := providers.NewRegistry()
+
+	gateway := gateway.New(providerRegistry)
 
 	s := &Server{
 		mux:     http.NewServeMux(),

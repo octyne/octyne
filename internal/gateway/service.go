@@ -3,14 +3,19 @@ package gateway
 import (
 	"errors"
 
+	"github.com/usekeel/keel/internal/providers"
 	"github.com/usekeel/keel/internal/registry"
 	"github.com/usekeel/keel/internal/types"
 )
 
-type Service struct{}
+type Service struct {
+	providers *providers.Registry
+}
 
-func New() *Service {
-	return &Service{}
+func New(providers *providers.Registry) *Service {
+	return &Service{
+		providers: providers,
+	}
 }
 
 func (s *Service) Chat(req types.ChatCompletionRequest) (*types.ChatCompletionResponse, error) {
