@@ -3,11 +3,8 @@ package server
 import (
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/usekeel/keel/internal/gateway"
-	"github.com/usekeel/keel/internal/providers"
-	openai "github.com/usekeel/keel/internal/providers/openaicompatible"
 )
 
 type Server struct {
@@ -15,23 +12,7 @@ type Server struct {
 	gateway *gateway.Service
 }
 
-func New() *Server {
-	cfg := providers.Config{
-		Name:    "openai",
-		BaseURL: "https://api.openai.com/v1",
-		Timeout: 30 * time.Second,
-	}
-	providerRegistry := providers.NewRegistry()
-
-	providerRegistry.Register(
-		"openai",
-		providers.New(
-			cfg,
-			openai.New(cfg),
-		),
-	)
-
-	gateway := gateway.New(providerRegistry)
+func New(gateway *gateway.Service) *Server {
 
 	s := &Server{
 		mux:     http.NewServeMux(),
