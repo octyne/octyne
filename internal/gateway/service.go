@@ -1,7 +1,6 @@
 package gateway
 
 import (
-	"context"
 	"errors"
 
 	"github.com/usekeel/keel/internal/providers"
@@ -26,13 +25,12 @@ func (s *Service) Chat(req types.ChatCompletionRequest) (*types.ChatCompletionRe
 		return nil, errors.New("unknown model")
 	}
 
-	provider, ok := s.providers.Get(model.Provider)
+	_, ok = s.providers.Get(model.Provider)
 	if !ok {
 		return nil, errors.New("provider not found")
 	}
 
-	return provider.Chat(
-		context.Background(),
-		req,
-	)
+	return &types.ChatCompletionResponse{
+		ID: "chatcmpl_mock",
+	}, nil
 }

@@ -1,14 +1,9 @@
 package providers
 
-import (
-	"context"
+import "github.com/usekeel/keel/internal/adapters"
 
-	"github.com/usekeel/keel/internal/types"
-)
-
-type Provider interface {
-	Chat(
-		ctx context.Context,
-		req types.ChatCompletionRequest,
-	) (*types.ChatCompletionResponse, error)
+type Provider struct {
+	Name    string
+	Config  Config
+	Adapter adapters.Adapter
 }
