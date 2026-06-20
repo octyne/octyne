@@ -8,6 +8,8 @@ func New() *Service {
 	return &Service{}
 }
 
-func (s *Service) Chat(req types.ChatCompletionRequest) error {
-	return nil
+func (s *Service) Chat(req types.ChatCompletionRequest) (*types.ChatCompletionResponse, error) {
+	return &types.ChatCompletionResponse{
+		ID: "chatcmpl_id",
+	}, nil
 }
