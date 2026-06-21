@@ -47,6 +47,13 @@ func (a *Adapter) Chat(
 
 	httpReq.Header.Set("Content-Type", "application/json")
 
+	if a.config.APIKey != "" {
+		httpReq.Header.Set(
+			"Authorization",
+			"Bearer "+a.config.APIKey,
+		)
+	}
+
 	return &types.ChatCompletionResponse{
 		ID: "chatcmpl_openai",
 	}, nil

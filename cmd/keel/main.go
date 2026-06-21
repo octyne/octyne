@@ -8,8 +8,11 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
-	application := app.New()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
+	application := app.New(cfg)
 
 	if err := application.Server.Start(":" + cfg.Port); err != nil {
 		log.Fatal(err)

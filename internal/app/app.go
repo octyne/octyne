@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/usekeel/keel/internal/adapters/openai"
+	"github.com/usekeel/keel/internal/config"
 	"github.com/usekeel/keel/internal/gateway"
 	"github.com/usekeel/keel/internal/providers"
 	"github.com/usekeel/keel/internal/server"
@@ -13,12 +14,13 @@ type App struct {
 	Server *server.Server
 }
 
-func New() *App {
+func New(appConfig config.Config) *App {
 	providerRegistry := providers.NewRegistry()
 
 	cfg := providers.Config{
 		Name:    "openai",
 		BaseURL: "https://api.openai.com/v1",
+		APIKey:  appConfig.OpenAIAPIKey,
 		Timeout: 30 * time.Second,
 	}
 
