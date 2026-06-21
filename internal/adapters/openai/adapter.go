@@ -92,3 +92,10 @@ func (a *Adapter) Chat(
 
 	return &response, nil
 }
+
+func (a *Adapter) StreamChat(
+	ctx context.Context,
+	req types.ChatCompletionRequest,
+) (<-chan types.StreamChunk, error) {
+	return nil, nil
+}
