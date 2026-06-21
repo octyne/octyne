@@ -10,6 +10,10 @@ var models = map[string]Model{
 		Provider: "openai",
 		ModelID:  "gpt-4.1-mini",
 	},
+	"gpt-5-nano": {
+		Provider: "openai",
+		ModelID:  "gpt-5-nano",
+	},
 }
 
 func Get(name string) (Model, bool) {
