@@ -77,7 +77,14 @@ func (a *Adapter) Chat(
 		return nil, err
 	}
 
-	_ = responseBody
+	// var openAIResp ChatCompletionResponse
+
+	if err := json.Unmarshal(
+		responseBody,
+		&openAIReq,
+	); err != nil {
+		return nil, err
+	}
 
 	return &types.ChatCompletionResponse{
 		ID: "chatcmpl_openai",

@@ -9,3 +9,13 @@ type ChatCompletionRequest struct {
 	Model    string    `json:"model"`
 	Messages []Message `json:"messages"`
 }
+
+type Choice struct {
+	Message Message `json:"message"`
+}
+
+type ChatCompletionResponse struct {
+	ID      string   `json:"id"`
+	Model   string   `json:"model"`
+	Choices []Choice `json:"choices"`
+}
