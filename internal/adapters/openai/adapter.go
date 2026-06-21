@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/usekeel/keel/internal/providers"
@@ -38,7 +40,7 @@ func (a *Adapter) Chat(
 	httpReq, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		a.config.BaseURL+"chat/completions",
+		a.config.BaseURL+"/chat/completions",
 		bytes.NewReader(body),
 	)
 	if err != nil {
@@ -53,6 +55,29 @@ func (a *Adapter) Chat(
 			"Bearer "+a.config.APIKey,
 		)
 	}
+
+	resp, err := a.client.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		responseBody, _ := io.ReadAll(resp.Body)
+
+		return nil, fmt.Errorf(
+			"openai returned status %d: %s",
+			resp.StatusCode,
+			string(responseBody),
+		)
+	}
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = responseBody
 
 	return &types.ChatCompletionResponse{
 		ID: "chatcmpl_openai",

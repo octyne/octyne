@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/usekeel/keel/internal/app"
 	"github.com/usekeel/keel/internal/config"
 )
 
 func main() {
+	godotenv.Load()
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Configuration error: %v", err)
