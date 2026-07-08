@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/usekeel/keel/internal/gateway"
+	"github.com/octyne/octyne/internal/gateway"
 )
 
 type Server struct {
@@ -25,6 +25,6 @@ func New(gateway *gateway.Service) *Server {
 }
 
 func (s *Server) Start(addr string) error {
-	log.Printf("Keel starting on %s", addr)
+	log.Printf("Octyne starting on %s", addr)
 	return http.ListenAndServe(addr, s.mux)
 }

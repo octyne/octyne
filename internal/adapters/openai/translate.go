@@ -1,6 +1,6 @@
 package openai
 
-import "github.com/usekeel/keel/internal/types"
+import "github.com/octyne/octyne/internal/types"
 
 func toChatCompletionRequest(
 	req types.ChatCompletionRequest,

@@ -3,7 +3,7 @@ package adapters
 import (
 	"context"
 
-	"github.com/usekeel/keel/internal/types"
+	"github.com/octyne/octyne/internal/types"
 )
 
 type Adapter interface {

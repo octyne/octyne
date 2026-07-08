@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-	"github.com/usekeel/keel/internal/app"
-	"github.com/usekeel/keel/internal/config"
+	"github.com/octyne/octyne/internal/app"
+	"github.com/octyne/octyne/internal/config"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/usekeel/keel/internal/types"
+	"github.com/octyne/octyne/internal/types"
 )
 
 func (s *Server) chatHandler(w http.ResponseWriter, r *http.Request) {

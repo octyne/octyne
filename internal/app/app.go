@@ -3,11 +3,11 @@ package app
 import (
 	"time"
 
-	"github.com/usekeel/keel/internal/adapters/openai"
-	"github.com/usekeel/keel/internal/config"
-	"github.com/usekeel/keel/internal/gateway"
-	"github.com/usekeel/keel/internal/providers"
-	"github.com/usekeel/keel/internal/server"
+	"github.com/octyne/octyne/internal/adapters/openai"
+	"github.com/octyne/octyne/internal/config"
+	"github.com/octyne/octyne/internal/gateway"
+	"github.com/octyne/octyne/internal/providers"
+	"github.com/octyne/octyne/internal/server"
 )
 
 type App struct {

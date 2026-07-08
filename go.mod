@@ -1,4 +1,4 @@
-module github.com/usekeel/keel
+module github.com/octyne/octyne
 
 go 1.26.4
 

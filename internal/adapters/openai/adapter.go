@@ -8,8 +8,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/usekeel/keel/internal/providers"
-	"github.com/usekeel/keel/internal/types"
+	"github.com/octyne/octyne/internal/providers"
+	"github.com/octyne/octyne/internal/types"
 )
 
 type Adapter struct {

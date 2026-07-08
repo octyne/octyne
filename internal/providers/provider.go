@@ -1,6 +1,6 @@
 package providers
 
-import "github.com/usekeel/keel/internal/adapters"
+import "github.com/octyne/octyne/internal/adapters"
 
 type Provider struct {
 	Name    string

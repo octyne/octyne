@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/usekeel/keel/internal/providers"
-	"github.com/usekeel/keel/internal/registry"
-	"github.com/usekeel/keel/internal/types"
+	"github.com/octyne/octyne/internal/providers"
+	"github.com/octyne/octyne/internal/registry"
+	"github.com/octyne/octyne/internal/types"
 )
 
 type Service struct {
