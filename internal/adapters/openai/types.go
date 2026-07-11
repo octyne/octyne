@@ -5,6 +5,10 @@ type Message struct {
 	Content string `json:"content"`
 }
 
+type StopSequences []string
+
+type LogitBias map[string]float64
+
 type ReasoningEffort string
 
 const (
@@ -85,6 +89,8 @@ type ChatCompletionRequest struct {
 	Metadata             *Metadata             `json:"metadata,omitempty"`
 	ServiceTier          *ServiceTier          `json:"service_tier,omitempty"`
 	PromptCacheOptions   *PromptCacheOptions   `json:"prompt_cache_options,omitempty"`
+	Stop                 *StopSequences        `json:"stop,omitempty"`
+	LogitBias            *LogitBias            `json:"logit_bias,omitempty"`
 }
 
 type Choice struct {

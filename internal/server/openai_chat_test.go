@@ -384,3 +384,21 @@ func TestToCanonicalChatRequestPreservesOperationalOptions(t *testing.T) {
 		t.Errorf("PromptCacheOptions = %+v, want explicit/30m", got.PromptCacheOptions)
 	}
 }
+
+func TestToCanonicalChatRequestPreservesSamplingCollections(t *testing.T) {
+	stop := openaicompat.StopSequences{""}
+	bias := openaicompat.LogitBias{}
+
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Stop:      &stop,
+		LogitBias: &bias,
+	})
+
+	if got.StopSequences == nil || len(*got.StopSequences) != 1 ||
+		(*got.StopSequences)[0] != "" {
+		t.Errorf("StopSequences = %v, want explicit empty string", got.StopSequences)
+	}
+	if got.LogitBias == nil || len(*got.LogitBias) != 0 {
+		t.Errorf("LogitBias = %v, want explicit empty object", got.LogitBias)
+	}
+}

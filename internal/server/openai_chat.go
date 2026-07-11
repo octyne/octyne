@@ -41,7 +41,25 @@ func toCanonicalChatRequest(
 		Metadata:               toCanonicalMetadata(req.Metadata),
 		ServiceTier:            toCanonicalServiceTier(req.ServiceTier),
 		PromptCacheOptions:     toCanonicalPromptCacheOptions(req.PromptCacheOptions),
+		StopSequences:          toCanonicalStopSequences(req.Stop),
+		LogitBias:              toCanonicalLogitBias(req.LogitBias),
 	}
+}
+
+func toCanonicalStopSequences(value *openaicompat.StopSequences) *types.StopSequences {
+	if value == nil {
+		return nil
+	}
+	converted := types.StopSequences(*value)
+	return &converted
+}
+
+func toCanonicalLogitBias(value *openaicompat.LogitBias) *types.LogitBias {
+	if value == nil {
+		return nil
+	}
+	converted := types.LogitBias(*value)
+	return &converted
 }
 
 func toCanonicalMetadata(value *openaicompat.Metadata) *types.Metadata {
