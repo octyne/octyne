@@ -34,3 +34,30 @@ func TestStopSequencesAcceptsStringAndArray(t *testing.T) {
 		})
 	}
 }
+
+func TestAudioVoiceAcceptsNameAndCustomID(t *testing.T) {
+	tests := []struct {
+		name     string
+		json     string
+		wantName string
+		wantID   string
+	}{
+		{name: "name", json: `"alloy"`, wantName: "alloy"},
+		{name: "custom", json: `{"id":"voice_123"}`, wantID: "voice_123"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got AudioVoice
+			if err := json.Unmarshal([]byte(tt.json), &got); err != nil {
+				t.Fatalf("Unmarshal() error = %v", err)
+			}
+			if tt.wantName != "" && (got.Name == nil || *got.Name != tt.wantName) {
+				t.Errorf("Name = %v, want %q", got.Name, tt.wantName)
+			}
+			if tt.wantID != "" && (got.ID == nil || *got.ID != tt.wantID) {
+				t.Errorf("ID = %v, want %q", got.ID, tt.wantID)
+			}
+		})
+	}
+}

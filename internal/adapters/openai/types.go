@@ -1,5 +1,7 @@
 package openai
 
+import "encoding/json"
+
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -8,6 +10,48 @@ type Message struct {
 type StopSequences []string
 
 type LogitBias map[string]float64
+
+type Modality string
+
+const (
+	ModalityText  Modality = "text"
+	ModalityAudio Modality = "audio"
+)
+
+type Modalities []Modality
+
+type AudioFormat string
+
+const (
+	AudioFormatWAV   AudioFormat = "wav"
+	AudioFormatAAC   AudioFormat = "aac"
+	AudioFormatMP3   AudioFormat = "mp3"
+	AudioFormatFLAC  AudioFormat = "flac"
+	AudioFormatOpus  AudioFormat = "opus"
+	AudioFormatPCM16 AudioFormat = "pcm16"
+)
+
+type AudioVoice struct {
+	Name *string
+	ID   *string
+}
+
+func (v AudioVoice) MarshalJSON() ([]byte, error) {
+	if v.ID != nil {
+		return json.Marshal(struct {
+			ID string `json:"id"`
+		}{ID: *v.ID})
+	}
+	if v.Name != nil {
+		return json.Marshal(*v.Name)
+	}
+	return []byte("null"), nil
+}
+
+type AudioOutput struct {
+	Format AudioFormat `json:"format"`
+	Voice  AudioVoice  `json:"voice"`
+}
 
 type ReasoningEffort string
 
@@ -97,6 +141,8 @@ type ChatCompletionRequest struct {
 	Stop                 *StopSequences        `json:"stop,omitempty"`
 	LogitBias            *LogitBias            `json:"logit_bias,omitempty"`
 	StreamOptions        *StreamOptions        `json:"stream_options,omitempty"`
+	Modalities           *Modalities           `json:"modalities,omitempty"`
+	Audio                *AudioOutput          `json:"audio,omitempty"`
 }
 
 type Choice struct {

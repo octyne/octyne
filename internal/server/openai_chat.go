@@ -44,6 +44,32 @@ func toCanonicalChatRequest(
 		StopSequences:          toCanonicalStopSequences(req.Stop),
 		LogitBias:              toCanonicalLogitBias(req.LogitBias),
 		StreamOptions:          toCanonicalStreamOptions(req.StreamOptions),
+		Modalities:             toCanonicalModalities(req.Modalities),
+		AudioOutput:            toCanonicalAudioOutput(req.Audio),
+	}
+}
+
+func toCanonicalModalities(value *openaicompat.Modalities) *types.Modalities {
+	if value == nil {
+		return nil
+	}
+	converted := make(types.Modalities, len(*value))
+	for i, modality := range *value {
+		converted[i] = types.Modality(modality)
+	}
+	return &converted
+}
+
+func toCanonicalAudioOutput(value *openaicompat.AudioOutput) *types.AudioOutput {
+	if value == nil {
+		return nil
+	}
+	return &types.AudioOutput{
+		Format: types.AudioFormat(value.Format),
+		Voice: types.AudioVoice{
+			Name: value.Voice.Name,
+			ID:   value.Voice.ID,
+		},
 	}
 }
 

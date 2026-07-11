@@ -43,6 +43,32 @@ func toChatCompletionRequest(
 		Stop:                 toStopSequences(req.StopSequences),
 		LogitBias:            toLogitBias(req.LogitBias),
 		StreamOptions:        toStreamOptions(req.StreamOptions),
+		Modalities:           toModalities(req.Modalities),
+		Audio:                toAudioOutput(req.AudioOutput),
+	}
+}
+
+func toModalities(value *types.Modalities) *Modalities {
+	if value == nil {
+		return nil
+	}
+	converted := make(Modalities, len(*value))
+	for i, modality := range *value {
+		converted[i] = Modality(modality)
+	}
+	return &converted
+}
+
+func toAudioOutput(value *types.AudioOutput) *AudioOutput {
+	if value == nil {
+		return nil
+	}
+	return &AudioOutput{
+		Format: AudioFormat(value.Format),
+		Voice: AudioVoice{
+			Name: value.Voice.Name,
+			ID:   value.Voice.ID,
+		},
 	}
 }
 
