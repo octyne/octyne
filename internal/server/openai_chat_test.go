@@ -8,13 +8,16 @@ import (
 
 func TestToCanonicalChatRequest(t *testing.T) {
 	zeroTemperature := 0.0
+	zeroTopP := 0.0
 	tests := []struct {
 		name        string
 		stream      bool
 		temperature *float64
+		topP        *float64
 	}{
-		{name: "omitted temperature", stream: false},
+		{name: "omitted sampling fields", stream: false},
 		{name: "explicit zero temperature", stream: true, temperature: &zeroTemperature},
+		{name: "explicit zero top p", stream: false, topP: &zeroTopP},
 	}
 
 	for _, tt := range tests {
@@ -29,6 +32,7 @@ func TestToCanonicalChatRequest(t *testing.T) {
 				},
 				Stream:      tt.stream,
 				Temperature: tt.temperature,
+				TopP:        tt.topP,
 			}
 
 			got := toCanonicalChatRequest(req)
@@ -58,6 +62,27 @@ func TestToCanonicalChatRequest(t *testing.T) {
 						"Temperature = %v, want %v",
 						*got.Temperature,
 						*tt.temperature,
+					)
+				}
+			}
+
+			if tt.topP == nil {
+				if got.TopP != nil {
+					t.Errorf(
+						"TopP = %v, want nil",
+						got.TopP,
+					)
+				}
+			} else {
+				if got.TopP == nil {
+					t.Fatal("TopP = nil, want explicit value")
+				}
+
+				if *got.TopP != *tt.topP {
+					t.Errorf(
+						"TopP = %v, want %v",
+						*got.TopP,
+						*tt.topP,
 					)
 				}
 			}

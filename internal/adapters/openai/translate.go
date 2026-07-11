@@ -20,6 +20,7 @@ func toChatCompletionRequest(
 		Messages:    messages,
 		Stream:      stream,
 		Temperature: req.Temperature,
+		TopP:        req.TopP,
 	}
 }
 

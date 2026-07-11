@@ -21,5 +21,6 @@ func toCanonicalChatRequest(
 		Messages:    messages,
 		Stream:      req.Stream,
 		Temperature: req.Temperature,
+		TopP:        req.TopP,
 	}
 }
