@@ -42,6 +42,17 @@ func toChatCompletionRequest(
 		PromptCacheOptions:   toPromptCacheOptions(req.PromptCacheOptions),
 		Stop:                 toStopSequences(req.StopSequences),
 		LogitBias:            toLogitBias(req.LogitBias),
+		StreamOptions:        toStreamOptions(req.StreamOptions),
+	}
+}
+
+func toStreamOptions(value *types.StreamOptions) *StreamOptions {
+	if value == nil {
+		return nil
+	}
+	return &StreamOptions{
+		IncludeUsage:       value.IncludeUsage,
+		IncludeObfuscation: value.IncludeObfuscation,
 	}
 }
 
