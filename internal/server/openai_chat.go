@@ -26,5 +26,7 @@ func toCanonicalChatRequest(
 		PresencePenalty:  req.PresencePenalty,
 		MaxOutputTokens:  req.MaxCompletionTokens,
 		CandidateCount:   req.N,
+		ReturnLogprobs:   req.Logprobs,
+		TopLogprobs:      req.TopLogprobs,
 	}
 }

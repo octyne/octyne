@@ -51,6 +51,8 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				PresencePenalty     *float64 `json:"presence_penalty"`
 				MaxCompletionTokens *int     `json:"max_completion_tokens"`
 				N                   *int     `json:"n"`
+				Logprobs            *bool    `json:"logprobs"`
+				TopLogprobs         *int     `json:"top_logprobs"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -96,6 +98,21 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				t.Errorf("N = %v, want 2", *upstreamRequest.N)
 			}
 
+			if upstreamRequest.Logprobs == nil {
+				t.Error("Logprobs = nil, want true")
+			} else if !*upstreamRequest.Logprobs {
+				t.Error("Logprobs = false, want true")
+			}
+
+			if upstreamRequest.TopLogprobs == nil {
+				t.Error("TopLogprobs = nil, want explicit zero")
+			} else if *upstreamRequest.TopLogprobs != 0 {
+				t.Errorf(
+					"TopLogprobs = %d, want 0",
+					*upstreamRequest.TopLogprobs,
+				)
+			}
+
 			if !strings.Contains(
 				string(requestBody),
 				`"stream":true`,
@@ -123,7 +140,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0}`,
 		),
 	)
 
@@ -180,6 +197,8 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				PresencePenalty     *float64 `json:"presence_penalty"`
 				MaxCompletionTokens *int     `json:"max_completion_tokens"`
 				N                   *int     `json:"n"`
+				Logprobs            *bool    `json:"logprobs"`
+				TopLogprobs         *int     `json:"top_logprobs"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -232,6 +251,19 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				t.Errorf("N = %v, want nil", *upstreamRequest.N)
 			}
 
+			if upstreamRequest.Logprobs == nil {
+				t.Error("Logprobs = nil, want explicit false")
+			} else if *upstreamRequest.Logprobs {
+				t.Error("Logprobs = true, want false")
+			}
+
+			if upstreamRequest.TopLogprobs != nil {
+				t.Errorf(
+					"TopLogprobs = %d, want nil",
+					*upstreamRequest.TopLogprobs,
+				)
+			}
+
 			if strings.Contains(string(requestBody), `"stream":true`) {
 				t.Errorf(
 					"non-streaming request enables streaming: %s",
@@ -264,7 +296,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0,"logprobs":false}`,
 		),
 	)
 
