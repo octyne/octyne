@@ -419,3 +419,27 @@ func TestToCanonicalChatRequestPreservesStreamOptions(t *testing.T) {
 		t.Errorf("StreamOptions = %+v, want explicit false values", got.StreamOptions)
 	}
 }
+
+func TestToCanonicalChatRequestTranslatesAudioOutput(t *testing.T) {
+	voiceID := "voice_123"
+	modalities := openaicompat.Modalities{
+		openaicompat.ModalityText,
+		openaicompat.ModalityAudio,
+	}
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Modalities: &modalities,
+		Audio: &openaicompat.AudioOutput{
+			Format: openaicompat.AudioFormatMP3,
+			Voice:  openaicompat.AudioVoice{ID: &voiceID},
+		},
+	})
+
+	if got.Modalities == nil || len(*got.Modalities) != 2 ||
+		(*got.Modalities)[1] != types.ModalityAudio {
+		t.Errorf("Modalities = %v, want text/audio", got.Modalities)
+	}
+	if got.AudioOutput == nil || got.AudioOutput.Format != types.AudioFormatMP3 ||
+		got.AudioOutput.Voice.ID == nil || *got.AudioOutput.Voice.ID != voiceID {
+		t.Errorf("AudioOutput = %+v, want mp3/custom voice", got.AudioOutput)
+	}
+}

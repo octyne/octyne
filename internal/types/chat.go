@@ -9,6 +9,36 @@ type StopSequences []string
 
 type LogitBias map[string]float64
 
+type Modality string
+
+const (
+	ModalityText  Modality = "text"
+	ModalityAudio Modality = "audio"
+)
+
+type Modalities []Modality
+
+type AudioFormat string
+
+const (
+	AudioFormatWAV   AudioFormat = "wav"
+	AudioFormatAAC   AudioFormat = "aac"
+	AudioFormatMP3   AudioFormat = "mp3"
+	AudioFormatFLAC  AudioFormat = "flac"
+	AudioFormatOpus  AudioFormat = "opus"
+	AudioFormatPCM16 AudioFormat = "pcm16"
+)
+
+type AudioVoice struct {
+	Name *string `json:"name,omitempty"`
+	ID   *string `json:"id,omitempty"`
+}
+
+type AudioOutput struct {
+	Format AudioFormat `json:"format"`
+	Voice  AudioVoice  `json:"voice"`
+}
+
 type ChatCompletionRequest struct {
 	Model                  string                `json:"model"`
 	Messages               []Message             `json:"messages"`
@@ -37,6 +67,8 @@ type ChatCompletionRequest struct {
 	StopSequences          *StopSequences        `json:"stop_sequences,omitempty"`
 	LogitBias              *LogitBias            `json:"logit_bias,omitempty"`
 	StreamOptions          *StreamOptions        `json:"stream_options,omitempty"`
+	Modalities             *Modalities           `json:"modalities,omitempty"`
+	AudioOutput            *AudioOutput          `json:"audio_output,omitempty"`
 }
 
 type Choice struct {

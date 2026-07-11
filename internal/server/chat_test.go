@@ -75,6 +75,11 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					IncludeUsage       *bool `json:"include_usage"`
 					IncludeObfuscation *bool `json:"include_obfuscation"`
 				} `json:"stream_options"`
+				Modalities *[]string `json:"modalities"`
+				Audio      *struct {
+					Format string          `json:"format"`
+					Voice  json.RawMessage `json:"voice"`
+				} `json:"audio"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -214,6 +219,14 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					upstreamRequest.StreamOptions,
 				)
 			}
+			if upstreamRequest.Modalities == nil || len(*upstreamRequest.Modalities) != 2 ||
+				(*upstreamRequest.Modalities)[1] != "audio" {
+				t.Errorf("Modalities = %v, want text/audio", upstreamRequest.Modalities)
+			}
+			if upstreamRequest.Audio == nil || upstreamRequest.Audio.Format != "mp3" ||
+				string(upstreamRequest.Audio.Voice) != `{"id":"voice_123"}` {
+				t.Errorf("Audio = %+v, want mp3/custom voice", upstreamRequest.Audio)
+			}
 
 			if !strings.Contains(
 				string(requestBody),
@@ -242,7 +255,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false}}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}}}`,
 		),
 	)
 

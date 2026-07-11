@@ -26,6 +26,54 @@ func (s *StopSequences) UnmarshalJSON(data []byte) error {
 
 type LogitBias map[string]float64
 
+type Modality string
+
+const (
+	ModalityText  Modality = "text"
+	ModalityAudio Modality = "audio"
+)
+
+type Modalities []Modality
+
+type AudioFormat string
+
+const (
+	AudioFormatWAV   AudioFormat = "wav"
+	AudioFormatAAC   AudioFormat = "aac"
+	AudioFormatMP3   AudioFormat = "mp3"
+	AudioFormatFLAC  AudioFormat = "flac"
+	AudioFormatOpus  AudioFormat = "opus"
+	AudioFormatPCM16 AudioFormat = "pcm16"
+)
+
+type AudioVoice struct {
+	Name *string
+	ID   *string
+}
+
+func (v *AudioVoice) UnmarshalJSON(data []byte) error {
+	var name string
+	if err := json.Unmarshal(data, &name); err == nil {
+		v.Name = &name
+		v.ID = nil
+		return nil
+	}
+	var custom struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(data, &custom); err != nil {
+		return err
+	}
+	v.Name = nil
+	v.ID = &custom.ID
+	return nil
+}
+
+type AudioOutput struct {
+	Format AudioFormat `json:"format"`
+	Voice  AudioVoice  `json:"voice"`
+}
+
 type ChatCompletionRequest struct {
 	Model                string                `json:"model"`
 	Messages             []Message             `json:"messages"`
@@ -54,6 +102,8 @@ type ChatCompletionRequest struct {
 	Stop                 *StopSequences        `json:"stop,omitempty"`
 	LogitBias            *LogitBias            `json:"logit_bias,omitempty"`
 	StreamOptions        *StreamOptions        `json:"stream_options,omitempty"`
+	Modalities           *Modalities           `json:"modalities,omitempty"`
+	Audio                *AudioOutput          `json:"audio,omitempty"`
 }
 
 type ReasoningEffort string
