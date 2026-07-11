@@ -46,8 +46,11 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
-				TopP             *float64 `json:"top_p"`
-				FrequencyPenalty *float64 `json:"frequency_penalty"`
+				TopP                *float64 `json:"top_p"`
+				FrequencyPenalty    *float64 `json:"frequency_penalty"`
+				PresencePenalty     *float64 `json:"presence_penalty"`
+				MaxCompletionTokens *int     `json:"max_completion_tokens"`
+				N                   *int     `json:"n"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -69,6 +72,28 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					"FrequencyPenalty = %v, want nil",
 					*upstreamRequest.FrequencyPenalty,
 				)
+			}
+
+			if upstreamRequest.PresencePenalty != nil {
+				t.Errorf(
+					"PresencePenalty = %v, want nil",
+					*upstreamRequest.PresencePenalty,
+				)
+			}
+
+			if upstreamRequest.MaxCompletionTokens == nil {
+				t.Error("MaxCompletionTokens = nil, want 128")
+			} else if *upstreamRequest.MaxCompletionTokens != 128 {
+				t.Errorf(
+					"MaxCompletionTokens = %v, want 128",
+					*upstreamRequest.MaxCompletionTokens,
+				)
+			}
+
+			if upstreamRequest.N == nil {
+				t.Error("N = nil, want 2")
+			} else if *upstreamRequest.N != 2 {
+				t.Errorf("N = %v, want 2", *upstreamRequest.N)
 			}
 
 			if !strings.Contains(
@@ -98,7 +123,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2}`,
 		),
 	)
 
@@ -149,9 +174,12 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
-				Temperature      *float64 `json:"temperature"`
-				TopP             *float64 `json:"top_p"`
-				FrequencyPenalty *float64 `json:"frequency_penalty"`
+				Temperature         *float64 `json:"temperature"`
+				TopP                *float64 `json:"top_p"`
+				FrequencyPenalty    *float64 `json:"frequency_penalty"`
+				PresencePenalty     *float64 `json:"presence_penalty"`
+				MaxCompletionTokens *int     `json:"max_completion_tokens"`
+				N                   *int     `json:"n"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -182,6 +210,26 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 					"FrequencyPenalty = %v, want 0",
 					*upstreamRequest.FrequencyPenalty,
 				)
+			}
+
+			if upstreamRequest.PresencePenalty == nil {
+				t.Error("PresencePenalty = nil, want explicit zero")
+			} else if *upstreamRequest.PresencePenalty != 0 {
+				t.Errorf(
+					"PresencePenalty = %v, want 0",
+					*upstreamRequest.PresencePenalty,
+				)
+			}
+
+			if upstreamRequest.MaxCompletionTokens != nil {
+				t.Errorf(
+					"MaxCompletionTokens = %v, want nil",
+					*upstreamRequest.MaxCompletionTokens,
+				)
+			}
+
+			if upstreamRequest.N != nil {
+				t.Errorf("N = %v, want nil", *upstreamRequest.N)
 			}
 
 			if strings.Contains(string(requestBody), `"stream":true`) {
@@ -216,7 +264,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0}`,
 		),
 	)
 
