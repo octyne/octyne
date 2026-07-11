@@ -32,7 +32,7 @@ Long term, Octyne should expose multiple compatibility APIs, including OpenAI-co
 
 ## Current State
 
-The current working vertical slice is non-streaming chat completions through the OpenAI adapter:
+The current working vertical slice supports both non-streaming and streaming chat completions through the OpenAI adapter:
 
 ```text
 Client -> HTTP server -> chat handler -> gateway -> model registry
@@ -53,15 +53,22 @@ Current low-cost OpenAI development model:
 gpt-5-nano
 ```
 
-The next implementation priority is OpenAI streaming support while preserving existing non-streaming behavior.
+For `POST /v1/chat/completions`, requests with `stream` omitted or set to `false` return OpenAI-compatible `chat.completion` JSON. Requests with `stream: true` return OpenAI-compatible SSE events in the form `data: <chat.completion.chunk JSON>\n\n`, followed by `data: [DONE]\n\n` after successful completion.
+
+The OpenAI adapter shares request construction and provider routing across both modes while keeping response handling separate. Non-streaming decodes one JSON response. Streaming reads SSE incrementally, propagates request cancellation, and gives the stream goroutine sole ownership of closing the upstream body and output channel.
+
+The current OpenAI non-streaming request timeout is 600 seconds. Streaming has no total-duration timeout; it uses a 30-second response-header timeout and remains governed by the incoming request context after the stream begins.
+
+Automated tests cover non-streaming response compatibility, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Default tests use local HTTP test servers and do not call paid provider APIs.
+
+The next implementation priority is adding common generation parameters carefully while improving compatibility-layer error handling.
 
 ## Near-Term Priorities
 
-1. Complete OpenAI streaming for `POST /v1/chat/completions`.
-2. Add common generation parameters carefully after streaming is stable.
-3. Improve canonical error handling and OpenAI-compatible error responses.
-4. Add focused tests for translation, routing, config, handlers, and adapters.
-5. Move the model registry toward configurable registration before it becomes permanent hardcoding.
+1. Add common generation parameters carefully now that streaming is stable.
+2. Improve canonical error handling and OpenAI-compatible error responses.
+3. Add focused tests for remaining translation, routing, and configuration paths.
+4. Move the model registry toward configurable registration before it becomes permanent hardcoding.
 
 ## Beta Scope
 

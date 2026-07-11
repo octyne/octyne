@@ -8,14 +8,21 @@ type Message struct {
 type ChatCompletionRequest struct {
 	Model    string    `json:"model"`
 	Messages []Message `json:"messages"`
+	Stream   bool      `json:"stream,omitempty"`
 }
 
 type Choice struct {
-	Message Message `json:"message"`
+	Index        int     `json:"index"`
+	Message      Message `json:"message"`
+	FinishReason *string `json:"finish_reason"`
+	Logprobs     any     `json:"logprobs"`
 }
 
 type ChatCompletionResponse struct {
 	ID      string   `json:"id"`
+	Object  string   `json:"object"`
+	Created int64    `json:"created"`
 	Model   string   `json:"model"`
 	Choices []Choice `json:"choices"`
+	Usage   any      `json:"usage,omitempty"`
 }
