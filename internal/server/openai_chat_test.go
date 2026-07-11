@@ -15,6 +15,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 	zeroN := 0
 	falseLogprobs := false
 	zeroTopLogprobs := 0
+	emptyReasoningEffort := openaicompat.ReasoningEffort("")
+	highVerbosity := openaicompat.VerbosityHigh
 	tests := []struct {
 		name                string
 		stream              bool
@@ -26,6 +28,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 		n                   *int
 		logprobs            *bool
 		topLogprobs         *int
+		reasoningEffort     *openaicompat.ReasoningEffort
+		verbosity           *openaicompat.Verbosity
 	}{
 		{name: "omitted sampling fields", stream: false},
 		{name: "explicit zero temperature", stream: true, temperature: &zeroTemperature},
@@ -49,6 +53,11 @@ func TestToCanonicalChatRequest(t *testing.T) {
 			name:        "explicit zero top logprobs",
 			topLogprobs: &zeroTopLogprobs,
 		},
+		{
+			name:            "explicit empty reasoning effort",
+			reasoningEffort: &emptyReasoningEffort,
+		},
+		{name: "explicit verbosity", verbosity: &highVerbosity},
 	}
 
 	for _, tt := range tests {
@@ -70,6 +79,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 				N:                   tt.n,
 				Logprobs:            tt.logprobs,
 				TopLogprobs:         tt.topLogprobs,
+				ReasoningEffort:     tt.reasoningEffort,
+				Verbosity:           tt.verbosity,
 			}
 
 			got := toCanonicalChatRequest(req)
@@ -227,6 +238,34 @@ func TestToCanonicalChatRequest(t *testing.T) {
 					"TopLogprobs = %d, want %d",
 					*got.TopLogprobs,
 					*tt.topLogprobs,
+				)
+			}
+
+			if tt.reasoningEffort == nil {
+				if got.ReasoningEffort != nil {
+					t.Errorf("ReasoningEffort = %q, want nil", *got.ReasoningEffort)
+				}
+			} else if got.ReasoningEffort == nil {
+				t.Fatal("ReasoningEffort = nil, want explicit value")
+			} else if string(*got.ReasoningEffort) != string(*tt.reasoningEffort) {
+				t.Errorf(
+					"ReasoningEffort = %q, want %q",
+					*got.ReasoningEffort,
+					*tt.reasoningEffort,
+				)
+			}
+
+			if tt.verbosity == nil {
+				if got.Verbosity != nil {
+					t.Errorf("Verbosity = %q, want nil", *got.Verbosity)
+				}
+			} else if got.Verbosity == nil {
+				t.Fatal("Verbosity = nil, want explicit value")
+			} else if string(*got.Verbosity) != string(*tt.verbosity) {
+				t.Errorf(
+					"Verbosity = %q, want %q",
+					*got.Verbosity,
+					*tt.verbosity,
 				)
 			}
 

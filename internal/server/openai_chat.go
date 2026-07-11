@@ -28,5 +28,29 @@ func toCanonicalChatRequest(
 		CandidateCount:   req.N,
 		ReturnLogprobs:   req.Logprobs,
 		TopLogprobs:      req.TopLogprobs,
+		ReasoningEffort:  toCanonicalReasoningEffort(req.ReasoningEffort),
+		Verbosity:        toCanonicalVerbosity(req.Verbosity),
 	}
+}
+
+func toCanonicalReasoningEffort(
+	value *openaicompat.ReasoningEffort,
+) *types.ReasoningEffort {
+	if value == nil {
+		return nil
+	}
+
+	converted := types.ReasoningEffort(*value)
+	return &converted
+}
+
+func toCanonicalVerbosity(
+	value *openaicompat.Verbosity,
+) *types.Verbosity {
+	if value == nil {
+		return nil
+	}
+
+	converted := types.Verbosity(*value)
+	return &converted
 }

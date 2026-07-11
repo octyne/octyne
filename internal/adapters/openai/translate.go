@@ -27,7 +27,27 @@ func toChatCompletionRequest(
 		N:                   req.CandidateCount,
 		Logprobs:            req.ReturnLogprobs,
 		TopLogprobs:         req.TopLogprobs,
+		ReasoningEffort:     toReasoningEffort(req.ReasoningEffort),
+		Verbosity:           toVerbosity(req.Verbosity),
 	}
+}
+
+func toReasoningEffort(value *types.ReasoningEffort) *ReasoningEffort {
+	if value == nil {
+		return nil
+	}
+
+	converted := ReasoningEffort(*value)
+	return &converted
+}
+
+func toVerbosity(value *types.Verbosity) *Verbosity {
+	if value == nil {
+		return nil
+	}
+
+	converted := Verbosity(*value)
+	return &converted
 }
 
 func toChatCompletionResponse(
