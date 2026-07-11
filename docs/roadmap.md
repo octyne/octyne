@@ -4,15 +4,18 @@ This roadmap is directional. Keep implementation incremental and commit each coh
 
 ## Milestone 1: Complete OpenAI Chat
 
-- Preserve the working non-streaming chat completions path.
-- Extract shared OpenAI chat request construction.
-- Implement OpenAI streaming request execution.
-- Parse OpenAI SSE incrementally, including `[DONE]`.
-- Add gateway and server streaming paths.
-- Return OpenAI-compatible SSE when `stream: true`.
-- Add focused tests for translation, non-streaming behavior, streaming parsing, provider errors, cancellation, and channel closure.
-- Add common generation parameters after streaming is stable.
-- Improve finish reasons, usage mapping, request IDs, and canonical errors.
+The initial non-streaming and streaming vertical slice is complete.
+
+- [x] Preserve the working non-streaming chat completions path.
+- [x] Extract shared OpenAI chat request construction.
+- [x] Implement OpenAI streaming request execution.
+- [x] Parse OpenAI SSE incrementally, including `[DONE]`.
+- [x] Add gateway and server streaming paths.
+- [x] Return OpenAI-compatible SSE when `stream: true`.
+- [x] Add focused tests for non-streaming behavior, streaming parsing, provider setup errors, cancellation, timeout behavior, channel closure, and downstream SSE framing.
+- [ ] Add common generation parameters now that streaming is stable.
+- [ ] Improve finish reasons, usage mapping, request IDs, and canonical errors.
+- [ ] Expand focused tests for remaining translation, routing, and configuration paths.
 
 ## Milestone 2: OpenAI-Compatible Providers
 

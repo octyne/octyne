@@ -18,10 +18,11 @@ func New(appConfig config.Config) *App {
 	providerRegistry := providers.NewRegistry()
 
 	cfg := providers.Config{
-		Name:    "openai",
-		BaseURL: "https://api.openai.com/v1",
-		APIKey:  appConfig.OpenAIAPIKey,
-		Timeout: 30 * time.Second,
+		Name:                           "openai",
+		BaseURL:                        "https://api.openai.com/v1",
+		APIKey:                         appConfig.OpenAIAPIKey,
+		NonStreamingTimeout:            600 * time.Second,
+		StreamingResponseHeaderTimeout: 30 * time.Second,
 	}
 
 	providerRegistry.Register(
