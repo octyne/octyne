@@ -68,6 +68,8 @@ provider-specific schema
 
 The current OpenAI-compatible request and canonical DTOs may look similar, but they should not be treated as permanently identical. New fields should be added only after deciding their canonical meaning, provider mappings, unsupported-provider behavior, and compatibility requirements.
 
+The Chat Completions request boundary currently covers all 37 top-level OpenAI parameters. Stable nested shapes use typed structs and tagged unions; `json.RawMessage` is reserved for genuinely arbitrary user-provided JSON Schema and function-parameter payloads. Role-specific messages are decoded at the compatibility boundary and normalized into canonical chat messages before provider translation.
+
 ## Providers and Adapters
 
 A provider is a configured upstream. An adapter is a protocol implementation. Multiple providers may share one adapter when their protocol is compatible.
