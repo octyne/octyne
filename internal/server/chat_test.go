@@ -221,3 +221,39 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 
 	return New(gateway.New(providerRegistry))
 }
+
+func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
+	server := newTestServer(t, http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			t.Error("upstream was called for an invalid request")
+			http.Error(w, "unexpected upstream call", http.StatusInternalServerError)
+		},
+	))
+
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/v1/chat/completions",
+		strings.NewReader(
+			`{"model":"gpt-5-nano","messages":[]}`,
+		),
+	)
+
+	recorder := httptest.NewRecorder()
+	server.mux.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Errorf(
+			"status = %d, want %d",
+			recorder.Code,
+			http.StatusBadRequest,
+		)
+	}
+
+	if got := recorder.Body.String(); got != "messages are required\n" {
+		t.Errorf(
+			"body = %q, want %q",
+			got,
+			"messages are required\n",
+		)
+	}
+}
