@@ -61,14 +61,17 @@ The current OpenAI non-streaming request timeout is 600 seconds. Streaming has n
 
 Automated tests cover non-streaming response compatibility, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Default tests use local HTTP test servers and do not call paid provider APIs.
 
-The next implementation priority is adding common generation parameters carefully while improving compatibility-layer error handling.
+The OpenAI-compatible Chat Completions request now covers all 37 current top-level parameters, including typed role-specific and multimodal messages, tools and tool choices, structured output, prediction, streaming options, prompt caching, provider-assisted features, and accepted deprecated fields. The compatibility, canonical, and OpenAI provider layers remain distinct, and optional scalar values preserve explicit zero, false, and empty values.
+
+The next implementation priority is completing the non-streaming response and streaming chunk schemas while improving compatibility-layer error handling.
 
 ## Near-Term Priorities
 
-1. Add common generation parameters carefully now that streaming is stable.
-2. Improve canonical error handling and OpenAI-compatible error responses.
-3. Add focused tests for remaining translation, routing, and configuration paths.
-4. Move the model registry toward configurable registration before it becomes permanent hardcoding.
+1. Complete typed non-streaming response, usage, log probability, and assistant tool-call schemas.
+2. Complete typed streaming delta, tool-call fragment, usage-only chunk, and obfuscation schemas.
+3. Improve canonical error handling and OpenAI-compatible error responses.
+4. Add focused tests for remaining routing and configuration paths.
+5. Move the model registry toward configurable registration before it becomes permanent hardcoding.
 
 ## Beta Scope
 

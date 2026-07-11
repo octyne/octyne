@@ -13,7 +13,7 @@ The initial non-streaming and streaming vertical slice is complete.
 - [x] Add gateway and server streaming paths.
 - [x] Return OpenAI-compatible SSE when `stream: true`.
 - [x] Add focused tests for non-streaming behavior, streaming parsing, provider setup errors, cancellation, timeout behavior, channel closure, and downstream SSE framing.
-- [ ] Add common generation parameters now that streaming is stable.
+- [x] Complete all current top-level Chat Completions request parameters and their typed nested request shapes.
 - [ ] Improve finish reasons, usage mapping, request IDs, and canonical errors.
 - [ ] Expand focused tests for remaining translation, routing, and configuration paths.
 
