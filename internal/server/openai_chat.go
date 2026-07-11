@@ -43,6 +43,17 @@ func toCanonicalChatRequest(
 		PromptCacheOptions:     toCanonicalPromptCacheOptions(req.PromptCacheOptions),
 		StopSequences:          toCanonicalStopSequences(req.Stop),
 		LogitBias:              toCanonicalLogitBias(req.LogitBias),
+		StreamOptions:          toCanonicalStreamOptions(req.StreamOptions),
+	}
+}
+
+func toCanonicalStreamOptions(value *openaicompat.StreamOptions) *types.StreamOptions {
+	if value == nil {
+		return nil
+	}
+	return &types.StreamOptions{
+		IncludeUsage:       value.IncludeUsage,
+		IncludeObfuscation: value.IncludeObfuscation,
 	}
 }
 

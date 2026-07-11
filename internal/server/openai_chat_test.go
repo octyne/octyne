@@ -402,3 +402,20 @@ func TestToCanonicalChatRequestPreservesSamplingCollections(t *testing.T) {
 		t.Errorf("LogitBias = %v, want explicit empty object", got.LogitBias)
 	}
 }
+
+func TestToCanonicalChatRequestPreservesStreamOptions(t *testing.T) {
+	falseValue := false
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		StreamOptions: &openaicompat.StreamOptions{
+			IncludeUsage:       &falseValue,
+			IncludeObfuscation: &falseValue,
+		},
+	})
+
+	if got.StreamOptions == nil || got.StreamOptions.IncludeUsage == nil ||
+		*got.StreamOptions.IncludeUsage ||
+		got.StreamOptions.IncludeObfuscation == nil ||
+		*got.StreamOptions.IncludeObfuscation {
+		t.Errorf("StreamOptions = %+v, want explicit false values", got.StreamOptions)
+	}
+}

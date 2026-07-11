@@ -64,6 +64,11 @@ type PromptCacheOptions struct {
 	TTL  *PromptCacheTTL  `json:"ttl,omitempty"`
 }
 
+type StreamOptions struct {
+	IncludeUsage       *bool `json:"include_usage,omitempty"`
+	IncludeObfuscation *bool `json:"include_obfuscation,omitempty"`
+}
+
 type ChatCompletionRequest struct {
 	Model                string                `json:"model"`
 	Messages             []Message             `json:"messages"`
@@ -91,6 +96,7 @@ type ChatCompletionRequest struct {
 	PromptCacheOptions   *PromptCacheOptions   `json:"prompt_cache_options,omitempty"`
 	Stop                 *StopSequences        `json:"stop,omitempty"`
 	LogitBias            *LogitBias            `json:"logit_bias,omitempty"`
+	StreamOptions        *StreamOptions        `json:"stream_options,omitempty"`
 }
 
 type Choice struct {
