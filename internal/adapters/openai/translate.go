@@ -49,6 +49,10 @@ func toChatCompletionRequest(
 		Prediction:           toPrediction(req.Prediction),
 		Moderation:           toModeration(req.Moderation),
 		WebSearchOptions:     toWebSearchOptions(req.WebSearch),
+		Tools:                toTools(req.Tools),
+		ToolChoice:           toToolChoice(req.ToolChoice),
+		Functions:            toLegacyFunctions(req.LegacyFunctions),
+		FunctionCall:         toLegacyFunctionCall(req.LegacyFunctionCall),
 	}
 }
 

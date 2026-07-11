@@ -79,3 +79,39 @@ func TestPredictionContentAcceptsStringAndParts(t *testing.T) {
 		t.Errorf("parts prediction = %+v", parts)
 	}
 }
+
+func TestToolChoiceAcceptsModeAndObject(t *testing.T) {
+	var mode ToolChoice
+	if err := json.Unmarshal([]byte(`"auto"`), &mode); err != nil {
+		t.Fatalf("unmarshal mode: %v", err)
+	}
+	if mode.Mode == nil || *mode.Mode != "auto" {
+		t.Errorf("Mode = %v, want auto", mode.Mode)
+	}
+
+	var named ToolChoice
+	if err := json.Unmarshal([]byte(`{"type":"function","function":{"name":"weather"}}`), &named); err != nil {
+		t.Fatalf("unmarshal named choice: %v", err)
+	}
+	if named.Function == nil || named.Function.Name != "weather" {
+		t.Errorf("Function = %+v, want weather", named.Function)
+	}
+}
+
+func TestLegacyFunctionCallAcceptsModeAndName(t *testing.T) {
+	var mode LegacyFunctionCall
+	if err := json.Unmarshal([]byte(`"none"`), &mode); err != nil {
+		t.Fatalf("unmarshal mode: %v", err)
+	}
+	if mode.Mode == nil || *mode.Mode != "none" {
+		t.Errorf("Mode = %v, want none", mode.Mode)
+	}
+
+	var named LegacyFunctionCall
+	if err := json.Unmarshal([]byte(`{"name":"legacy"}`), &named); err != nil {
+		t.Fatalf("unmarshal name: %v", err)
+	}
+	if named.Name == nil || *named.Name != "legacy" {
+		t.Errorf("Name = %v, want legacy", named.Name)
+	}
+}
