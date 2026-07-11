@@ -53,6 +53,8 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				N                   *int     `json:"n"`
 				Logprobs            *bool    `json:"logprobs"`
 				TopLogprobs         *int     `json:"top_logprobs"`
+				ReasoningEffort     *string  `json:"reasoning_effort"`
+				Verbosity           *string  `json:"verbosity"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -113,6 +115,18 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				)
 			}
 
+			if upstreamRequest.ReasoningEffort == nil ||
+				*upstreamRequest.ReasoningEffort != "high" {
+				t.Errorf(
+					"ReasoningEffort = %v, want high",
+					upstreamRequest.ReasoningEffort,
+				)
+			}
+
+			if upstreamRequest.Verbosity != nil {
+				t.Errorf("Verbosity = %v, want nil", *upstreamRequest.Verbosity)
+			}
+
 			if !strings.Contains(
 				string(requestBody),
 				`"stream":true`,
@@ -140,7 +154,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high"}`,
 		),
 	)
 
@@ -199,6 +213,8 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				N                   *int     `json:"n"`
 				Logprobs            *bool    `json:"logprobs"`
 				TopLogprobs         *int     `json:"top_logprobs"`
+				ReasoningEffort     *string  `json:"reasoning_effort"`
+				Verbosity           *string  `json:"verbosity"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -264,6 +280,21 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				)
 			}
 
+			if upstreamRequest.ReasoningEffort != nil {
+				t.Errorf(
+					"ReasoningEffort = %v, want nil",
+					*upstreamRequest.ReasoningEffort,
+				)
+			}
+
+			if upstreamRequest.Verbosity == nil ||
+				*upstreamRequest.Verbosity != "medium" {
+				t.Errorf(
+					"Verbosity = %v, want medium",
+					upstreamRequest.Verbosity,
+				)
+			}
+
 			if strings.Contains(string(requestBody), `"stream":true`) {
 				t.Errorf(
 					"non-streaming request enables streaming: %s",
@@ -296,7 +327,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0,"logprobs":false}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0,"logprobs":false,"verbosity":"medium"}`,
 		),
 	)
 
