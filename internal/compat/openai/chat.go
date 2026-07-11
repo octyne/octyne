@@ -1,9 +1,30 @@
 package openai
 
+import "encoding/json"
+
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
+
+type StopSequences []string
+
+func (s *StopSequences) UnmarshalJSON(data []byte) error {
+	var single string
+	if err := json.Unmarshal(data, &single); err == nil {
+		*s = StopSequences{single}
+		return nil
+	}
+
+	var multiple []string
+	if err := json.Unmarshal(data, &multiple); err != nil {
+		return err
+	}
+	*s = multiple
+	return nil
+}
+
+type LogitBias map[string]float64
 
 type ChatCompletionRequest struct {
 	Model                string                `json:"model"`
@@ -30,6 +51,8 @@ type ChatCompletionRequest struct {
 	Metadata             *Metadata             `json:"metadata,omitempty"`
 	ServiceTier          *ServiceTier          `json:"service_tier,omitempty"`
 	PromptCacheOptions   *PromptCacheOptions   `json:"prompt_cache_options,omitempty"`
+	Stop                 *StopSequences        `json:"stop,omitempty"`
+	LogitBias            *LogitBias            `json:"logit_bias,omitempty"`
 }
 
 type ReasoningEffort string

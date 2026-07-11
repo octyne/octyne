@@ -69,6 +69,8 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					Mode *string `json:"mode"`
 					TTL  *string `json:"ttl"`
 				} `json:"prompt_cache_options"`
+				Stop      *[]string           `json:"stop"`
+				LogitBias *map[string]float64 `json:"logit_bias"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -191,6 +193,13 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					upstreamRequest.PromptCacheOptions,
 				)
 			}
+			if upstreamRequest.Stop == nil || len(*upstreamRequest.Stop) != 1 ||
+				(*upstreamRequest.Stop)[0] != "END" {
+				t.Errorf("Stop = %v, want [END]", upstreamRequest.Stop)
+			}
+			if upstreamRequest.LogitBias == nil || len(*upstreamRequest.LogitBias) != 0 {
+				t.Errorf("LogitBias = %v, want explicit empty object", upstreamRequest.LogitBias)
+			}
 
 			if !strings.Contains(
 				string(requestBody),
@@ -219,7 +228,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"}}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{}}`,
 		),
 	)
 

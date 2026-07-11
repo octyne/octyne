@@ -40,7 +40,25 @@ func toChatCompletionRequest(
 		Metadata:             toMetadata(req.Metadata),
 		ServiceTier:          toServiceTier(req.ServiceTier),
 		PromptCacheOptions:   toPromptCacheOptions(req.PromptCacheOptions),
+		Stop:                 toStopSequences(req.StopSequences),
+		LogitBias:            toLogitBias(req.LogitBias),
 	}
+}
+
+func toStopSequences(value *types.StopSequences) *StopSequences {
+	if value == nil {
+		return nil
+	}
+	converted := StopSequences(*value)
+	return &converted
+}
+
+func toLogitBias(value *types.LogitBias) *LogitBias {
+	if value == nil {
+		return nil
+	}
+	converted := LogitBias(*value)
+	return &converted
 }
 
 func toMetadata(value *types.Metadata) *Metadata {
