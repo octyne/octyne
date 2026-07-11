@@ -46,7 +46,31 @@ func toChatCompletionRequest(
 		Modalities:           toModalities(req.Modalities),
 		Audio:                toAudioOutput(req.AudioOutput),
 		ResponseFormat:       toResponseFormat(req.ResponseFormat),
+		Prediction:           toPrediction(req.Prediction),
 	}
+}
+
+func toPrediction(value *types.Prediction) *Prediction {
+	if value == nil {
+		return nil
+	}
+	converted := &Prediction{Type: value.Type}
+	if value.Content.Text != nil {
+		converted.Content.Text = value.Content.Text
+	}
+	if value.Content.Parts != nil {
+		parts := make([]TextContentPart, len(*value.Content.Parts))
+		for i, part := range *value.Content.Parts {
+			parts[i] = TextContentPart{Type: part.Type, Text: part.Text}
+			if part.PromptCacheBreakpoint != nil {
+				parts[i].PromptCacheBreakpoint = &PromptCacheBreakpoint{
+					Mode: part.PromptCacheBreakpoint.Mode,
+				}
+			}
+		}
+		converted.Content.Parts = &parts
+	}
+	return converted
 }
 
 func toResponseFormat(value *types.ResponseFormat) *ResponseFormat {

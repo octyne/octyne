@@ -61,6 +61,26 @@ type ResponseFormat struct {
 	JSONSchema *JSONSchemaFormat  `json:"json_schema,omitempty"`
 }
 
+type PromptCacheBreakpoint struct {
+	Mode string `json:"mode"`
+}
+
+type TextContentPart struct {
+	Type                  string                 `json:"type"`
+	Text                  string                 `json:"text"`
+	PromptCacheBreakpoint *PromptCacheBreakpoint `json:"prompt_cache_breakpoint,omitempty"`
+}
+
+type PredictionContent struct {
+	Text  *string            `json:"text,omitempty"`
+	Parts *[]TextContentPart `json:"parts,omitempty"`
+}
+
+type Prediction struct {
+	Type    string            `json:"type"`
+	Content PredictionContent `json:"content"`
+}
+
 type ChatCompletionRequest struct {
 	Model                  string                `json:"model"`
 	Messages               []Message             `json:"messages"`
@@ -92,6 +112,7 @@ type ChatCompletionRequest struct {
 	Modalities             *Modalities           `json:"modalities,omitempty"`
 	AudioOutput            *AudioOutput          `json:"audio_output,omitempty"`
 	ResponseFormat         *ResponseFormat       `json:"response_format,omitempty"`
+	Prediction             *Prediction           `json:"prediction,omitempty"`
 }
 
 type Choice struct {
