@@ -50,6 +50,10 @@ func toCanonicalChatRequest(
 		Prediction:             toCanonicalPrediction(req.Prediction),
 		Moderation:             toCanonicalModeration(req.Moderation),
 		WebSearch:              toCanonicalWebSearch(req.WebSearchOptions),
+		Tools:                  toCanonicalTools(req.Tools),
+		ToolChoice:             toCanonicalToolChoice(req.ToolChoice),
+		LegacyFunctions:        toCanonicalLegacyFunctions(req.Functions),
+		LegacyFunctionCall:     toCanonicalLegacyFunctionCall(req.FunctionCall),
 	}
 }
 

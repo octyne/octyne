@@ -526,3 +526,39 @@ func TestToCanonicalChatRequestTranslatesProviderAssistance(t *testing.T) {
 		t.Errorf("WebSearch = %+v, want high/US", got.WebSearch)
 	}
 }
+
+func TestToCanonicalChatRequestTranslatesTools(t *testing.T) {
+	parameters := json.RawMessage(`{}`)
+	strict := false
+	choiceType := "function"
+	legacyName := "legacy"
+	tools := []openaicompat.Tool{{
+		Type: "function",
+		Function: &openaicompat.FunctionDefinition{
+			Name: "weather", Parameters: &parameters, Strict: &strict,
+		},
+	}}
+	functions := []openaicompat.LegacyFunctionDefinition{{Name: "legacy", Parameters: &parameters}}
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Tools: &tools,
+		ToolChoice: &openaicompat.ToolChoice{
+			Type: &choiceType, Function: &openaicompat.NamedTool{Name: "weather"},
+		},
+		Functions:    &functions,
+		FunctionCall: &openaicompat.LegacyFunctionCall{Name: &legacyName},
+	})
+
+	if got.Tools == nil || len(*got.Tools) != 1 || (*got.Tools)[0].Function == nil ||
+		(*got.Tools)[0].Function.Name != "weather" || (*got.Tools)[0].Function.Strict == nil ||
+		*(*got.Tools)[0].Function.Strict {
+		t.Errorf("Tools = %+v, want strict-false weather function", got.Tools)
+	}
+	if got.ToolChoice == nil || got.ToolChoice.Function == nil ||
+		got.ToolChoice.Function.Name != "weather" {
+		t.Errorf("ToolChoice = %+v, want weather", got.ToolChoice)
+	}
+	if got.LegacyFunctions == nil || len(*got.LegacyFunctions) != 1 ||
+		got.LegacyFunctionCall == nil || got.LegacyFunctionCall.Name == nil {
+		t.Errorf("legacy function controls missing: %+v %+v", got.LegacyFunctions, got.LegacyFunctionCall)
+	}
+}
