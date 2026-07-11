@@ -9,15 +9,22 @@ import (
 func TestToCanonicalChatRequest(t *testing.T) {
 	zeroTemperature := 0.0
 	zeroTopP := 0.0
+	zeroFrequencyPenalty := 0.0
 	tests := []struct {
-		name        string
-		stream      bool
-		temperature *float64
-		topP        *float64
+		name             string
+		stream           bool
+		temperature      *float64
+		topP             *float64
+		frequencyPenalty *float64
 	}{
 		{name: "omitted sampling fields", stream: false},
 		{name: "explicit zero temperature", stream: true, temperature: &zeroTemperature},
 		{name: "explicit zero top p", stream: false, topP: &zeroTopP},
+		{
+			name:             "explicit zero frequency penalty",
+			stream:           true,
+			frequencyPenalty: &zeroFrequencyPenalty,
+		},
 	}
 
 	for _, tt := range tests {
@@ -30,9 +37,10 @@ func TestToCanonicalChatRequest(t *testing.T) {
 						Content: "Hello",
 					},
 				},
-				Stream:      tt.stream,
-				Temperature: tt.temperature,
-				TopP:        tt.topP,
+				Stream:           tt.stream,
+				Temperature:      tt.temperature,
+				TopP:             tt.topP,
+				FrequencyPenalty: tt.frequencyPenalty,
 			}
 
 			got := toCanonicalChatRequest(req)
@@ -83,6 +91,27 @@ func TestToCanonicalChatRequest(t *testing.T) {
 						"TopP = %v, want %v",
 						*got.TopP,
 						*tt.topP,
+					)
+				}
+			}
+
+			if tt.frequencyPenalty == nil {
+				if got.FrequencyPenalty != nil {
+					t.Errorf(
+						"FrequencyPenalty = %v, want nil",
+						got.FrequencyPenalty,
+					)
+				}
+			} else {
+				if got.FrequencyPenalty == nil {
+					t.Fatal("FrequencyPenalty = nil, want explicit value")
+				}
+
+				if *got.FrequencyPenalty != *tt.frequencyPenalty {
+					t.Errorf(
+						"FrequencyPenalty = %v, want %v",
+						*got.FrequencyPenalty,
+						*tt.frequencyPenalty,
 					)
 				}
 			}
