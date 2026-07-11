@@ -29,6 +29,11 @@ func toChatCompletionRequest(
 		TopLogprobs:         req.TopLogprobs,
 		ReasoningEffort:     toReasoningEffort(req.ReasoningEffort),
 		Verbosity:           toVerbosity(req.Verbosity),
+		Seed:                req.Seed,
+		Store:               req.StoreOutput,
+		ParallelToolCalls:   req.AllowParallelToolCalls,
+		SafetyIdentifier:    req.SafetyIdentifier,
+		PromptCacheKey:      req.PromptCacheKey,
 	}
 }
 

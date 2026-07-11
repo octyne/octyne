@@ -292,3 +292,43 @@ func TestToCanonicalChatRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestToCanonicalChatRequestPreservesScalarControls(t *testing.T) {
+	zeroSeed := int64(0)
+	falseValue := false
+	empty := ""
+
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Seed:              &zeroSeed,
+		Store:             &falseValue,
+		ParallelToolCalls: &falseValue,
+		SafetyIdentifier:  &empty,
+		PromptCacheKey:    &empty,
+	})
+
+	if got.Seed == nil || *got.Seed != 0 {
+		t.Errorf("Seed = %v, want explicit zero", got.Seed)
+	}
+	if got.StoreOutput == nil || *got.StoreOutput {
+		t.Errorf("StoreOutput = %v, want explicit false", got.StoreOutput)
+	}
+	if got.AllowParallelToolCalls == nil || *got.AllowParallelToolCalls {
+		t.Errorf(
+			"AllowParallelToolCalls = %v, want explicit false",
+			got.AllowParallelToolCalls,
+		)
+	}
+	if got.SafetyIdentifier == nil || *got.SafetyIdentifier != "" {
+		t.Errorf("SafetyIdentifier = %v, want explicit empty string", got.SafetyIdentifier)
+	}
+	if got.PromptCacheKey == nil || *got.PromptCacheKey != "" {
+		t.Errorf("PromptCacheKey = %v, want explicit empty string", got.PromptCacheKey)
+	}
+
+	omitted := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{})
+	if omitted.Seed != nil || omitted.StoreOutput != nil ||
+		omitted.AllowParallelToolCalls != nil ||
+		omitted.SafetyIdentifier != nil || omitted.PromptCacheKey != nil {
+		t.Errorf("omitted scalar controls were not preserved: %+v", omitted)
+	}
+}

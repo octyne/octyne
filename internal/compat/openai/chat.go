@@ -19,6 +19,11 @@ type ChatCompletionRequest struct {
 	TopLogprobs         *int             `json:"top_logprobs,omitempty"`
 	ReasoningEffort     *ReasoningEffort `json:"reasoning_effort,omitempty"`
 	Verbosity           *Verbosity       `json:"verbosity,omitempty"`
+	Seed                *int64           `json:"seed,omitempty"`
+	Store               *bool            `json:"store,omitempty"`
+	ParallelToolCalls   *bool            `json:"parallel_tool_calls,omitempty"`
+	SafetyIdentifier    *string          `json:"safety_identifier,omitempty"`
+	PromptCacheKey      *string          `json:"prompt_cache_key,omitempty"`
 }
 
 type ReasoningEffort string
