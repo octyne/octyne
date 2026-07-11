@@ -61,3 +61,21 @@ func TestAudioVoiceAcceptsNameAndCustomID(t *testing.T) {
 		})
 	}
 }
+
+func TestPredictionContentAcceptsStringAndParts(t *testing.T) {
+	var text PredictionContent
+	if err := json.Unmarshal([]byte(`"hello"`), &text); err != nil {
+		t.Fatalf("unmarshal text: %v", err)
+	}
+	if text.Text == nil || *text.Text != "hello" || text.Parts != nil {
+		t.Errorf("text prediction = %+v", text)
+	}
+
+	var parts PredictionContent
+	if err := json.Unmarshal([]byte(`[{"type":"text","text":"hello"}]`), &parts); err != nil {
+		t.Fatalf("unmarshal parts: %v", err)
+	}
+	if parts.Parts == nil || len(*parts.Parts) != 1 || (*parts.Parts)[0].Text != "hello" {
+		t.Errorf("parts prediction = %+v", parts)
+	}
+}

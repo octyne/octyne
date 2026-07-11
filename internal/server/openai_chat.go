@@ -47,7 +47,31 @@ func toCanonicalChatRequest(
 		Modalities:             toCanonicalModalities(req.Modalities),
 		AudioOutput:            toCanonicalAudioOutput(req.Audio),
 		ResponseFormat:         toCanonicalResponseFormat(req.ResponseFormat),
+		Prediction:             toCanonicalPrediction(req.Prediction),
 	}
+}
+
+func toCanonicalPrediction(value *openaicompat.Prediction) *types.Prediction {
+	if value == nil {
+		return nil
+	}
+	converted := &types.Prediction{Type: value.Type}
+	if value.Content.Text != nil {
+		converted.Content.Text = value.Content.Text
+	}
+	if value.Content.Parts != nil {
+		parts := make([]types.TextContentPart, len(*value.Content.Parts))
+		for i, part := range *value.Content.Parts {
+			parts[i] = types.TextContentPart{Type: part.Type, Text: part.Text}
+			if part.PromptCacheBreakpoint != nil {
+				parts[i].PromptCacheBreakpoint = &types.PromptCacheBreakpoint{
+					Mode: part.PromptCacheBreakpoint.Mode,
+				}
+			}
+		}
+		converted.Content.Parts = &parts
+	}
+	return converted
 }
 
 func toCanonicalResponseFormat(value *openaicompat.ResponseFormat) *types.ResponseFormat {

@@ -73,6 +73,36 @@ type ResponseFormat struct {
 	JSONSchema *JSONSchemaFormat  `json:"json_schema,omitempty"`
 }
 
+type PromptCacheBreakpoint struct {
+	Mode string `json:"mode"`
+}
+
+type TextContentPart struct {
+	Type                  string                 `json:"type"`
+	Text                  string                 `json:"text"`
+	PromptCacheBreakpoint *PromptCacheBreakpoint `json:"prompt_cache_breakpoint,omitempty"`
+}
+
+type PredictionContent struct {
+	Text  *string
+	Parts *[]TextContentPart
+}
+
+func (c PredictionContent) MarshalJSON() ([]byte, error) {
+	if c.Text != nil {
+		return json.Marshal(*c.Text)
+	}
+	if c.Parts != nil {
+		return json.Marshal(*c.Parts)
+	}
+	return []byte("null"), nil
+}
+
+type Prediction struct {
+	Type    string            `json:"type"`
+	Content PredictionContent `json:"content"`
+}
+
 type ReasoningEffort string
 
 const (
@@ -164,6 +194,7 @@ type ChatCompletionRequest struct {
 	Modalities           *Modalities           `json:"modalities,omitempty"`
 	Audio                *AudioOutput          `json:"audio,omitempty"`
 	ResponseFormat       *ResponseFormat       `json:"response_format,omitempty"`
+	Prediction           *Prediction           `json:"prediction,omitempty"`
 }
 
 type Choice struct {

@@ -470,3 +470,26 @@ func TestToCanonicalChatRequestTranslatesResponseFormat(t *testing.T) {
 		t.Errorf("ResponseFormat = %+v, want typed JSON schema", got.ResponseFormat)
 	}
 }
+
+func TestToCanonicalChatRequestTranslatesPrediction(t *testing.T) {
+	parts := []openaicompat.TextContentPart{{
+		Type: "text",
+		Text: "",
+		PromptCacheBreakpoint: &openaicompat.PromptCacheBreakpoint{
+			Mode: "explicit",
+		},
+	}}
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Prediction: &openaicompat.Prediction{
+			Type:    "content",
+			Content: openaicompat.PredictionContent{Parts: &parts},
+		},
+	})
+
+	if got.Prediction == nil || got.Prediction.Content.Parts == nil ||
+		len(*got.Prediction.Content.Parts) != 1 ||
+		(*got.Prediction.Content.Parts)[0].Text != "" ||
+		(*got.Prediction.Content.Parts)[0].PromptCacheBreakpoint == nil {
+		t.Errorf("Prediction = %+v, want explicit empty text part", got.Prediction)
+	}
+}
