@@ -1,0 +1,100 @@
+# Roadmap
+
+This roadmap is directional. Keep implementation incremental and commit each coherent change separately.
+
+## Milestone 1: Complete OpenAI Chat
+
+- Preserve the working non-streaming chat completions path.
+- Extract shared OpenAI chat request construction.
+- Implement OpenAI streaming request execution.
+- Parse OpenAI SSE incrementally, including `[DONE]`.
+- Add gateway and server streaming paths.
+- Return OpenAI-compatible SSE when `stream: true`.
+- Add focused tests for translation, non-streaming behavior, streaming parsing, provider errors, cancellation, and channel closure.
+- Add common generation parameters after streaming is stable.
+- Improve finish reasons, usage mapping, request IDs, and canonical errors.
+
+## Milestone 2: OpenAI-Compatible Providers
+
+Reuse the OpenAI-compatible adapter where practical for:
+
+- OpenAI
+- Azure OpenAI
+- OpenRouter
+- Ollama
+- vLLM
+- LM Studio
+
+Provider-specific differences should be configuration or focused extensions, not copied adapters. Differences may include base URL, authentication, headers, query parameters, deployment paths, API versions, and unsupported fields.
+
+## Milestone 3: Anthropic Adapter
+
+Expose Anthropic models through the OpenAI-compatible API first.
+
+- Request translation.
+- System message handling.
+- Chat message conversion.
+- Tool-call mapping.
+- Streaming event translation.
+- Usage mapping.
+- Finish reason mapping.
+- Provider error mapping.
+
+## Milestone 4: Gemini Adapter
+
+Expose Gemini models through the OpenAI-compatible API first.
+
+- Role and content translation.
+- System instruction mapping.
+- Generation config mapping.
+- Tool mapping.
+- Streaming.
+- Usage mapping.
+- Finish reason mapping.
+- Provider error mapping.
+
+## Milestone 5: Authentication and BYOK
+
+- Octyne API keys.
+- Hashed key storage.
+- Request authentication middleware.
+- Provider credential selection.
+- BYOK header or stored credential flow.
+- Secret encryption.
+- Credential resolver design.
+
+Octyne API keys authenticate clients to Octyne. Provider credentials authenticate Octyne to upstream providers. Keep these concerns separate.
+
+## Milestone 6: Model API and Registry Evolution
+
+- Add `GET /v1/models`.
+- Return OpenAI-compatible model listings.
+- Move from hardcoded in-memory models toward configuration-driven registration.
+- Preserve room for future metadata: provider mapping, aliases, capabilities, pricing, context window, streaming support, tools, vision, availability, routing policy, deployment ID, and organization visibility.
+
+## Milestone 7: Operational Readiness
+
+- Structured logging.
+- Metrics.
+- Request IDs.
+- Explicit server timeouts.
+- Graceful shutdown.
+- Retry policy where safe.
+- Circuit breaking where appropriate.
+- Rate limiting.
+- Docker image.
+- CI.
+- Release builds.
+- Configuration documentation.
+
+Retries require care for non-idempotent and streaming operations.
+
+## Later Platform Capabilities
+
+- Routing policies: explicit model, aliases, cheapest, lowest latency, provider priority, weighted routing, geographic routing, availability-based routing, capability-based routing, organization rules, and fallback chains.
+- Observability: traces, provider latency, time to first token, total latency, token usage, error rates, routing decisions, cost, retry count, and fallback count.
+- Prompt management: versions, environments, variables, deployment history, rollback, aliases, and experiments.
+- Evaluations: datasets, offline and online evals, regression testing, model comparison, and trace-linked evaluation.
+- Usage and billing: token accounting, cost accounting, quotas, budgets, alerts, and asynchronous usage events.
+- Multi-tenancy: users, organizations, projects, API keys, provider credentials, policies, and isolation.
+- Security: key hashing, secret encryption, rotation, audit logs, least privilege, header redaction, prompt/completion redaction, SSRF protection, and allowed-host policies.
