@@ -493,3 +493,36 @@ func TestToCanonicalChatRequestTranslatesPrediction(t *testing.T) {
 		t.Errorf("Prediction = %+v, want explicit empty text part", got.Prediction)
 	}
 }
+
+func TestToCanonicalChatRequestTranslatesProviderAssistance(t *testing.T) {
+	size := openaicompat.SearchContextSizeHigh
+	country := "US"
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Moderation: &openaicompat.ModerationOptions{
+			Model: "omni-moderation-latest",
+			Policy: &openaicompat.ModerationPolicy{
+				Input: &openaicompat.ModerationRule{Mode: openaicompat.ModerationModeBlock},
+			},
+		},
+		WebSearchOptions: &openaicompat.WebSearchOptions{
+			SearchContextSize: &size,
+			UserLocation: &openaicompat.UserLocation{
+				Type:        "approximate",
+				Approximate: openaicompat.ApproximateLocation{Country: &country},
+			},
+		},
+	})
+
+	if got.Moderation == nil || got.Moderation.Policy == nil ||
+		got.Moderation.Policy.Input == nil ||
+		got.Moderation.Policy.Input.Mode != types.ModerationModeBlock {
+		t.Errorf("Moderation = %+v, want blocking input policy", got.Moderation)
+	}
+	if got.WebSearch == nil || got.WebSearch.SearchContextSize == nil ||
+		*got.WebSearch.SearchContextSize != types.SearchContextSizeHigh ||
+		got.WebSearch.UserLocation == nil ||
+		got.WebSearch.UserLocation.Approximate.Country == nil ||
+		*got.WebSearch.UserLocation.Approximate.Country != "US" {
+		t.Errorf("WebSearch = %+v, want high/US", got.WebSearch)
+	}
+}

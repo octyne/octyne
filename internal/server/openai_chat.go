@@ -48,7 +48,47 @@ func toCanonicalChatRequest(
 		AudioOutput:            toCanonicalAudioOutput(req.Audio),
 		ResponseFormat:         toCanonicalResponseFormat(req.ResponseFormat),
 		Prediction:             toCanonicalPrediction(req.Prediction),
+		Moderation:             toCanonicalModeration(req.Moderation),
+		WebSearch:              toCanonicalWebSearch(req.WebSearchOptions),
 	}
+}
+
+func toCanonicalModeration(value *openaicompat.ModerationOptions) *types.ModerationOptions {
+	if value == nil {
+		return nil
+	}
+	converted := &types.ModerationOptions{Model: value.Model}
+	if value.Policy != nil {
+		converted.Policy = &types.ModerationPolicy{}
+		if value.Policy.Input != nil {
+			converted.Policy.Input = &types.ModerationRule{Mode: types.ModerationMode(value.Policy.Input.Mode)}
+		}
+		if value.Policy.Output != nil {
+			converted.Policy.Output = &types.ModerationRule{Mode: types.ModerationMode(value.Policy.Output.Mode)}
+		}
+	}
+	return converted
+}
+
+func toCanonicalWebSearch(value *openaicompat.WebSearchOptions) *types.WebSearchOptions {
+	if value == nil {
+		return nil
+	}
+	converted := &types.WebSearchOptions{}
+	if value.SearchContextSize != nil {
+		size := types.SearchContextSize(*value.SearchContextSize)
+		converted.SearchContextSize = &size
+	}
+	if value.UserLocation != nil {
+		converted.UserLocation = &types.UserLocation{
+			Type: value.UserLocation.Type,
+			Approximate: types.ApproximateLocation{
+				City: value.UserLocation.Approximate.City, Country: value.UserLocation.Approximate.Country,
+				Region: value.UserLocation.Approximate.Region, Timezone: value.UserLocation.Approximate.Timezone,
+			},
+		}
+	}
+	return converted
 }
 
 func toCanonicalPrediction(value *openaicompat.Prediction) *types.Prediction {

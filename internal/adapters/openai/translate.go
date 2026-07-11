@@ -47,7 +47,47 @@ func toChatCompletionRequest(
 		Audio:                toAudioOutput(req.AudioOutput),
 		ResponseFormat:       toResponseFormat(req.ResponseFormat),
 		Prediction:           toPrediction(req.Prediction),
+		Moderation:           toModeration(req.Moderation),
+		WebSearchOptions:     toWebSearchOptions(req.WebSearch),
 	}
+}
+
+func toModeration(value *types.ModerationOptions) *ModerationOptions {
+	if value == nil {
+		return nil
+	}
+	converted := &ModerationOptions{Model: value.Model}
+	if value.Policy != nil {
+		converted.Policy = &ModerationPolicy{}
+		if value.Policy.Input != nil {
+			converted.Policy.Input = &ModerationRule{Mode: ModerationMode(value.Policy.Input.Mode)}
+		}
+		if value.Policy.Output != nil {
+			converted.Policy.Output = &ModerationRule{Mode: ModerationMode(value.Policy.Output.Mode)}
+		}
+	}
+	return converted
+}
+
+func toWebSearchOptions(value *types.WebSearchOptions) *WebSearchOptions {
+	if value == nil {
+		return nil
+	}
+	converted := &WebSearchOptions{}
+	if value.SearchContextSize != nil {
+		size := SearchContextSize(*value.SearchContextSize)
+		converted.SearchContextSize = &size
+	}
+	if value.UserLocation != nil {
+		converted.UserLocation = &UserLocation{
+			Type: value.UserLocation.Type,
+			Approximate: ApproximateLocation{
+				City: value.UserLocation.Approximate.City, Country: value.UserLocation.Approximate.Country,
+				Region: value.UserLocation.Approximate.Region, Timezone: value.UserLocation.Approximate.Timezone,
+			},
+		}
+	}
+	return converted
 }
 
 func toPrediction(value *types.Prediction) *Prediction {
