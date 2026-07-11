@@ -16,25 +16,38 @@ func toChatCompletionRequest(
 	}
 
 	return ChatCompletionRequest{
-		Model:               req.Model,
-		Messages:            messages,
-		Stream:              stream,
-		Temperature:         req.Temperature,
-		TopP:                req.TopP,
-		FrequencyPenalty:    req.FrequencyPenalty,
-		PresencePenalty:     req.PresencePenalty,
-		MaxCompletionTokens: req.MaxOutputTokens,
-		N:                   req.CandidateCount,
-		Logprobs:            req.ReturnLogprobs,
-		TopLogprobs:         req.TopLogprobs,
-		ReasoningEffort:     toReasoningEffort(req.ReasoningEffort),
-		Verbosity:           toVerbosity(req.Verbosity),
-		Seed:                req.Seed,
-		Store:               req.StoreOutput,
-		ParallelToolCalls:   req.AllowParallelToolCalls,
-		SafetyIdentifier:    req.SafetyIdentifier,
-		PromptCacheKey:      req.PromptCacheKey,
+		Model:                req.Model,
+		Messages:             messages,
+		Stream:               stream,
+		Temperature:          req.Temperature,
+		TopP:                 req.TopP,
+		FrequencyPenalty:     req.FrequencyPenalty,
+		PresencePenalty:      req.PresencePenalty,
+		MaxCompletionTokens:  req.MaxOutputTokens,
+		N:                    req.CandidateCount,
+		Logprobs:             req.ReturnLogprobs,
+		TopLogprobs:          req.TopLogprobs,
+		ReasoningEffort:      toReasoningEffort(req.ReasoningEffort),
+		Verbosity:            toVerbosity(req.Verbosity),
+		Seed:                 req.Seed,
+		Store:                req.StoreOutput,
+		ParallelToolCalls:    req.AllowParallelToolCalls,
+		SafetyIdentifier:     req.SafetyIdentifier,
+		PromptCacheKey:       req.PromptCacheKey,
+		MaxTokens:            req.LegacyMaxOutputTokens,
+		User:                 req.LegacyUser,
+		PromptCacheRetention: toPromptCacheRetention(req.PromptCacheRetention),
 	}
+}
+
+func toPromptCacheRetention(
+	value *types.PromptCacheRetention,
+) *PromptCacheRetention {
+	if value == nil {
+		return nil
+	}
+	converted := PromptCacheRetention(*value)
+	return &converted
 }
 
 func toReasoningEffort(value *types.ReasoningEffort) *ReasoningEffort {

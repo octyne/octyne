@@ -35,7 +35,20 @@ func toCanonicalChatRequest(
 		AllowParallelToolCalls: req.ParallelToolCalls,
 		SafetyIdentifier:       req.SafetyIdentifier,
 		PromptCacheKey:         req.PromptCacheKey,
+		LegacyMaxOutputTokens:  req.MaxTokens,
+		LegacyUser:             req.User,
+		PromptCacheRetention:   toCanonicalPromptCacheRetention(req.PromptCacheRetention),
 	}
+}
+
+func toCanonicalPromptCacheRetention(
+	value *openaicompat.PromptCacheRetention,
+) *types.PromptCacheRetention {
+	if value == nil {
+		return nil
+	}
+	converted := types.PromptCacheRetention(*value)
+	return &converted
 }
 
 func toCanonicalReasoningEffort(
