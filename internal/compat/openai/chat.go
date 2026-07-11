@@ -130,6 +130,52 @@ type Prediction struct {
 	Content PredictionContent `json:"content"`
 }
 
+type ModerationMode string
+
+const (
+	ModerationModeScore ModerationMode = "score"
+	ModerationModeBlock ModerationMode = "block"
+)
+
+type ModerationRule struct {
+	Mode ModerationMode `json:"mode"`
+}
+
+type ModerationPolicy struct {
+	Input  *ModerationRule `json:"input,omitempty"`
+	Output *ModerationRule `json:"output,omitempty"`
+}
+
+type ModerationOptions struct {
+	Model  string            `json:"model"`
+	Policy *ModerationPolicy `json:"policy,omitempty"`
+}
+
+type SearchContextSize string
+
+const (
+	SearchContextSizeLow    SearchContextSize = "low"
+	SearchContextSizeMedium SearchContextSize = "medium"
+	SearchContextSizeHigh   SearchContextSize = "high"
+)
+
+type ApproximateLocation struct {
+	City     *string `json:"city,omitempty"`
+	Country  *string `json:"country,omitempty"`
+	Region   *string `json:"region,omitempty"`
+	Timezone *string `json:"timezone,omitempty"`
+}
+
+type UserLocation struct {
+	Type        string              `json:"type"`
+	Approximate ApproximateLocation `json:"approximate"`
+}
+
+type WebSearchOptions struct {
+	SearchContextSize *SearchContextSize `json:"search_context_size,omitempty"`
+	UserLocation      *UserLocation      `json:"user_location,omitempty"`
+}
+
 type ChatCompletionRequest struct {
 	Model                string                `json:"model"`
 	Messages             []Message             `json:"messages"`
@@ -162,6 +208,8 @@ type ChatCompletionRequest struct {
 	Audio                *AudioOutput          `json:"audio,omitempty"`
 	ResponseFormat       *ResponseFormat       `json:"response_format,omitempty"`
 	Prediction           *Prediction           `json:"prediction,omitempty"`
+	Moderation           *ModerationOptions    `json:"moderation,omitempty"`
+	WebSearchOptions     *WebSearchOptions     `json:"web_search_options,omitempty"`
 }
 
 type ReasoningEffort string

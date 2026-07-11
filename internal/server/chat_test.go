@@ -98,6 +98,8 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 						} `json:"prompt_cache_breakpoint"`
 					} `json:"content"`
 				} `json:"prediction"`
+				Moderation       json.RawMessage `json:"moderation"`
+				WebSearchOptions json.RawMessage `json:"web_search_options"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -262,6 +264,12 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				upstreamRequest.Prediction.Content[0].PromptCacheBreakpoint.Mode != "explicit" {
 				t.Errorf("Prediction = %+v, want typed content", upstreamRequest.Prediction)
 			}
+			if string(upstreamRequest.Moderation) != `{"model":"omni-moderation-latest","policy":{"input":{"mode":"block"}}}` {
+				t.Errorf("Moderation = %s", upstreamRequest.Moderation)
+			}
+			if string(upstreamRequest.WebSearchOptions) != `{"search_context_size":"high","user_location":{"type":"approximate","approximate":{"country":"US"}}}` {
+				t.Errorf("WebSearchOptions = %s", upstreamRequest.WebSearchOptions)
+			}
 
 			if !strings.Contains(
 				string(requestBody),
@@ -290,7 +298,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}},"response_format":{"type":"json_schema","json_schema":{"name":"answer","schema":{},"strict":false}},"prediction":{"type":"content","content":[{"type":"text","text":"","prompt_cache_breakpoint":{"mode":"explicit"}}]}}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}},"response_format":{"type":"json_schema","json_schema":{"name":"answer","schema":{},"strict":false}},"prediction":{"type":"content","content":[{"type":"text","text":"","prompt_cache_breakpoint":{"mode":"explicit"}}]},"moderation":{"model":"omni-moderation-latest","policy":{"input":{"mode":"block"}}},"web_search_options":{"search_context_size":"high","user_location":{"type":"approximate","approximate":{"country":"US"}}}}`,
 		),
 	)
 
