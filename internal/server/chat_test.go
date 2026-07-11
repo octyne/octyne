@@ -46,7 +46,8 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
-				TopP *float64 `json:"top_p"`
+				TopP             *float64 `json:"top_p"`
+				FrequencyPenalty *float64 `json:"frequency_penalty"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -60,6 +61,13 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				t.Errorf(
 					"TopP = %v, want 0",
 					*upstreamRequest.TopP,
+				)
+			}
+
+			if upstreamRequest.FrequencyPenalty != nil {
+				t.Errorf(
+					"FrequencyPenalty = %v, want nil",
+					*upstreamRequest.FrequencyPenalty,
 				)
 			}
 
@@ -141,8 +149,9 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
-				Temperature *float64 `json:"temperature"`
-				TopP        *float64 `json:"top_p"`
+				Temperature      *float64 `json:"temperature"`
+				TopP             *float64 `json:"top_p"`
+				FrequencyPenalty *float64 `json:"frequency_penalty"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -163,6 +172,15 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				t.Errorf(
 					"TopP = %v, want nil",
 					*upstreamRequest.TopP,
+				)
+			}
+
+			if upstreamRequest.FrequencyPenalty == nil {
+				t.Error("FrequencyPenalty = nil, want explicit zero")
+			} else if *upstreamRequest.FrequencyPenalty != 0 {
+				t.Errorf(
+					"FrequencyPenalty = %v, want 0",
+					*upstreamRequest.FrequencyPenalty,
 				)
 			}
 
@@ -198,7 +216,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0}`,
 		),
 	)
 

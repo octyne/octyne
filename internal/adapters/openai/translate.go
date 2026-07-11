@@ -16,11 +16,12 @@ func toChatCompletionRequest(
 	}
 
 	return ChatCompletionRequest{
-		Model:       req.Model,
-		Messages:    messages,
-		Stream:      stream,
-		Temperature: req.Temperature,
-		TopP:        req.TopP,
+		Model:            req.Model,
+		Messages:         messages,
+		Stream:           stream,
+		Temperature:      req.Temperature,
+		TopP:             req.TopP,
+		FrequencyPenalty: req.FrequencyPenalty,
 	}
 }
 

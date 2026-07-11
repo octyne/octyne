@@ -17,10 +17,11 @@ func toCanonicalChatRequest(
 		}
 	}
 	return types.ChatCompletionRequest{
-		Model:       req.Model,
-		Messages:    messages,
-		Stream:      req.Stream,
-		Temperature: req.Temperature,
-		TopP:        req.TopP,
+		Model:            req.Model,
+		Messages:         messages,
+		Stream:           req.Stream,
+		Temperature:      req.Temperature,
+		TopP:             req.TopP,
+		FrequencyPenalty: req.FrequencyPenalty,
 	}
 }
