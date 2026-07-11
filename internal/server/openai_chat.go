@@ -17,8 +17,9 @@ func toCanonicalChatRequest(
 		}
 	}
 	return types.ChatCompletionRequest{
-		Model:    req.Model,
-		Messages: messages,
-		Stream:   req.Stream,
+		Model:       req.Model,
+		Messages:    messages,
+		Stream:      req.Stream,
+		Temperature: req.Temperature,
 	}
 }

@@ -38,6 +38,13 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				return
 			}
 
+			if strings.Contains(string(requestBody), `"temperature"`) {
+				t.Errorf(
+					"request body unexpectedly includes temperature: %s",
+					requestBody,
+				)
+			}
+
 			if !strings.Contains(
 				string(requestBody),
 				`"stream":true`,
@@ -115,6 +122,24 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				return
 			}
 
+			var upstreamRequest struct {
+				Temperature *float64 `json:"temperature"`
+			}
+
+			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
+				t.Errorf("decode upstream request: %v", err)
+				return
+			}
+
+			if upstreamRequest.Temperature == nil {
+				t.Error("Temperature = nil, want explicit zero")
+			} else if *upstreamRequest.Temperature != 0 {
+				t.Errorf(
+					"Temperature = %v, want 0",
+					*upstreamRequest.Temperature,
+				)
+			}
+
 			if strings.Contains(string(requestBody), `"stream":true`) {
 				t.Errorf(
 					"non-streaming request enables streaming: %s",
@@ -147,7 +172,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}]}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0}`,
 		),
 	)
 

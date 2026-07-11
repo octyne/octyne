@@ -7,12 +7,14 @@ import (
 )
 
 func TestToCanonicalChatRequest(t *testing.T) {
+	zeroTemperature := 0.0
 	tests := []struct {
-		name   string
-		stream bool
+		name        string
+		stream      bool
+		temperature *float64
 	}{
-		{name: "non-streaming", stream: false},
-		{name: "streaming", stream: true},
+		{name: "omitted temperature", stream: false},
+		{name: "explicit zero temperature", stream: true, temperature: &zeroTemperature},
 	}
 
 	for _, tt := range tests {
@@ -25,7 +27,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 						Content: "Hello",
 					},
 				},
-				Stream: tt.stream,
+				Stream:      tt.stream,
+				Temperature: tt.temperature,
 			}
 
 			got := toCanonicalChatRequest(req)
@@ -36,6 +39,27 @@ func TestToCanonicalChatRequest(t *testing.T) {
 
 			if got.Stream != req.Stream {
 				t.Errorf("Stream = %t, want %t", got.Stream, req.Stream)
+			}
+
+			if tt.temperature == nil {
+				if got.Temperature != nil {
+					t.Errorf(
+						"Temperature = %v, want nil",
+						got.Temperature,
+					)
+				}
+			} else {
+				if got.Temperature == nil {
+					t.Fatal("Temperature = nil, want explicit value")
+				}
+
+				if *got.Temperature != *tt.temperature {
+					t.Errorf(
+						"Temperature = %v, want %v",
+						*got.Temperature,
+						*tt.temperature,
+					)
+				}
 			}
 
 			if len(got.Messages) != 1 {
