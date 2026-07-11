@@ -46,23 +46,29 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
-				TopP                 *float64 `json:"top_p"`
-				FrequencyPenalty     *float64 `json:"frequency_penalty"`
-				PresencePenalty      *float64 `json:"presence_penalty"`
-				MaxCompletionTokens  *int     `json:"max_completion_tokens"`
-				N                    *int     `json:"n"`
-				Logprobs             *bool    `json:"logprobs"`
-				TopLogprobs          *int     `json:"top_logprobs"`
-				ReasoningEffort      *string  `json:"reasoning_effort"`
-				Verbosity            *string  `json:"verbosity"`
-				Seed                 *int64   `json:"seed"`
-				Store                *bool    `json:"store"`
-				ParallelToolCalls    *bool    `json:"parallel_tool_calls"`
-				SafetyIdentifier     *string  `json:"safety_identifier"`
-				PromptCacheKey       *string  `json:"prompt_cache_key"`
-				MaxTokens            *int     `json:"max_tokens"`
-				User                 *string  `json:"user"`
-				PromptCacheRetention *string  `json:"prompt_cache_retention"`
+				TopP                 *float64           `json:"top_p"`
+				FrequencyPenalty     *float64           `json:"frequency_penalty"`
+				PresencePenalty      *float64           `json:"presence_penalty"`
+				MaxCompletionTokens  *int               `json:"max_completion_tokens"`
+				N                    *int               `json:"n"`
+				Logprobs             *bool              `json:"logprobs"`
+				TopLogprobs          *int               `json:"top_logprobs"`
+				ReasoningEffort      *string            `json:"reasoning_effort"`
+				Verbosity            *string            `json:"verbosity"`
+				Seed                 *int64             `json:"seed"`
+				Store                *bool              `json:"store"`
+				ParallelToolCalls    *bool              `json:"parallel_tool_calls"`
+				SafetyIdentifier     *string            `json:"safety_identifier"`
+				PromptCacheKey       *string            `json:"prompt_cache_key"`
+				MaxTokens            *int               `json:"max_tokens"`
+				User                 *string            `json:"user"`
+				PromptCacheRetention *string            `json:"prompt_cache_retention"`
+				Metadata             *map[string]string `json:"metadata"`
+				ServiceTier          *string            `json:"service_tier"`
+				PromptCacheOptions   *struct {
+					Mode *string `json:"mode"`
+					TTL  *string `json:"ttl"`
+				} `json:"prompt_cache_options"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -169,6 +175,22 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					upstreamRequest.PromptCacheRetention,
 				)
 			}
+			if upstreamRequest.Metadata == nil || len(*upstreamRequest.Metadata) != 0 {
+				t.Errorf("Metadata = %v, want explicit empty object", upstreamRequest.Metadata)
+			}
+			if upstreamRequest.ServiceTier == nil || *upstreamRequest.ServiceTier != "flex" {
+				t.Errorf("ServiceTier = %v, want flex", upstreamRequest.ServiceTier)
+			}
+			if upstreamRequest.PromptCacheOptions == nil ||
+				upstreamRequest.PromptCacheOptions.Mode == nil ||
+				*upstreamRequest.PromptCacheOptions.Mode != "explicit" ||
+				upstreamRequest.PromptCacheOptions.TTL == nil ||
+				*upstreamRequest.PromptCacheOptions.TTL != "30m" {
+				t.Errorf(
+					"PromptCacheOptions = %+v, want explicit/30m",
+					upstreamRequest.PromptCacheOptions,
+				)
+			}
 
 			if !strings.Contains(
 				string(requestBody),
@@ -197,7 +219,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h"}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"}}`,
 		),
 	)
 

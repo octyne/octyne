@@ -355,3 +355,32 @@ func TestToCanonicalChatRequestPreservesDeprecatedControls(t *testing.T) {
 		t.Errorf("PromptCacheRetention = %v, want 24h", got.PromptCacheRetention)
 	}
 }
+
+func TestToCanonicalChatRequestPreservesOperationalOptions(t *testing.T) {
+	metadata := openaicompat.Metadata{}
+	tier := openaicompat.ServiceTierFlex
+	mode := openaicompat.PromptCacheModeExplicit
+	ttl := openaicompat.PromptCacheTTL30m
+
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		Metadata:    &metadata,
+		ServiceTier: &tier,
+		PromptCacheOptions: &openaicompat.PromptCacheOptions{
+			Mode: &mode,
+			TTL:  &ttl,
+		},
+	})
+
+	if got.Metadata == nil || len(*got.Metadata) != 0 {
+		t.Errorf("Metadata = %v, want explicit empty object", got.Metadata)
+	}
+	if got.ServiceTier == nil || *got.ServiceTier != types.ServiceTierFlex {
+		t.Errorf("ServiceTier = %v, want flex", got.ServiceTier)
+	}
+	if got.PromptCacheOptions == nil || got.PromptCacheOptions.Mode == nil ||
+		*got.PromptCacheOptions.Mode != types.PromptCacheModeExplicit ||
+		got.PromptCacheOptions.TTL == nil ||
+		*got.PromptCacheOptions.TTL != types.PromptCacheTTL30m {
+		t.Errorf("PromptCacheOptions = %+v, want explicit/30m", got.PromptCacheOptions)
+	}
+}

@@ -27,6 +27,9 @@ type ChatCompletionRequest struct {
 	MaxTokens            *int                  `json:"max_tokens,omitempty"`
 	User                 *string               `json:"user,omitempty"`
 	PromptCacheRetention *PromptCacheRetention `json:"prompt_cache_retention,omitempty"`
+	Metadata             *Metadata             `json:"metadata,omitempty"`
+	ServiceTier          *ServiceTier          `json:"service_tier,omitempty"`
+	PromptCacheOptions   *PromptCacheOptions   `json:"prompt_cache_options,omitempty"`
 }
 
 type ReasoningEffort string
@@ -55,3 +58,31 @@ const (
 	PromptCacheRetentionInMemory PromptCacheRetention = "in_memory"
 	PromptCacheRetention24h      PromptCacheRetention = "24h"
 )
+
+type Metadata map[string]string
+
+type ServiceTier string
+
+const (
+	ServiceTierAuto     ServiceTier = "auto"
+	ServiceTierDefault  ServiceTier = "default"
+	ServiceTierFlex     ServiceTier = "flex"
+	ServiceTierScale    ServiceTier = "scale"
+	ServiceTierPriority ServiceTier = "priority"
+)
+
+type PromptCacheMode string
+
+const (
+	PromptCacheModeImplicit PromptCacheMode = "implicit"
+	PromptCacheModeExplicit PromptCacheMode = "explicit"
+)
+
+type PromptCacheTTL string
+
+const PromptCacheTTL30m PromptCacheTTL = "30m"
+
+type PromptCacheOptions struct {
+	Mode *PromptCacheMode `json:"mode,omitempty"`
+	TTL  *PromptCacheTTL  `json:"ttl,omitempty"`
+}
