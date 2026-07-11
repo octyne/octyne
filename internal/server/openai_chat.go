@@ -17,19 +17,24 @@ func toCanonicalChatRequest(
 		}
 	}
 	return types.ChatCompletionRequest{
-		Model:            req.Model,
-		Messages:         messages,
-		Stream:           req.Stream,
-		Temperature:      req.Temperature,
-		TopP:             req.TopP,
-		FrequencyPenalty: req.FrequencyPenalty,
-		PresencePenalty:  req.PresencePenalty,
-		MaxOutputTokens:  req.MaxCompletionTokens,
-		CandidateCount:   req.N,
-		ReturnLogprobs:   req.Logprobs,
-		TopLogprobs:      req.TopLogprobs,
-		ReasoningEffort:  toCanonicalReasoningEffort(req.ReasoningEffort),
-		Verbosity:        toCanonicalVerbosity(req.Verbosity),
+		Model:                  req.Model,
+		Messages:               messages,
+		Stream:                 req.Stream,
+		Temperature:            req.Temperature,
+		TopP:                   req.TopP,
+		FrequencyPenalty:       req.FrequencyPenalty,
+		PresencePenalty:        req.PresencePenalty,
+		MaxOutputTokens:        req.MaxCompletionTokens,
+		CandidateCount:         req.N,
+		ReturnLogprobs:         req.Logprobs,
+		TopLogprobs:            req.TopLogprobs,
+		ReasoningEffort:        toCanonicalReasoningEffort(req.ReasoningEffort),
+		Verbosity:              toCanonicalVerbosity(req.Verbosity),
+		Seed:                   req.Seed,
+		StoreOutput:            req.Store,
+		AllowParallelToolCalls: req.ParallelToolCalls,
+		SafetyIdentifier:       req.SafetyIdentifier,
+		PromptCacheKey:         req.PromptCacheKey,
 	}
 }
 

@@ -55,6 +55,11 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				TopLogprobs         *int     `json:"top_logprobs"`
 				ReasoningEffort     *string  `json:"reasoning_effort"`
 				Verbosity           *string  `json:"verbosity"`
+				Seed                *int64   `json:"seed"`
+				Store               *bool    `json:"store"`
+				ParallelToolCalls   *bool    `json:"parallel_tool_calls"`
+				SafetyIdentifier    *string  `json:"safety_identifier"`
+				PromptCacheKey      *string  `json:"prompt_cache_key"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -127,6 +132,28 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				t.Errorf("Verbosity = %v, want nil", *upstreamRequest.Verbosity)
 			}
 
+			if upstreamRequest.Seed == nil || *upstreamRequest.Seed != 0 {
+				t.Errorf("Seed = %v, want explicit zero", upstreamRequest.Seed)
+			}
+			if upstreamRequest.Store == nil || *upstreamRequest.Store {
+				t.Errorf("Store = %v, want explicit false", upstreamRequest.Store)
+			}
+			if upstreamRequest.ParallelToolCalls == nil ||
+				*upstreamRequest.ParallelToolCalls {
+				t.Errorf(
+					"ParallelToolCalls = %v, want explicit false",
+					upstreamRequest.ParallelToolCalls,
+				)
+			}
+			if upstreamRequest.SafetyIdentifier == nil ||
+				*upstreamRequest.SafetyIdentifier != "" {
+				t.Errorf("SafetyIdentifier = %v, want empty", upstreamRequest.SafetyIdentifier)
+			}
+			if upstreamRequest.PromptCacheKey == nil ||
+				*upstreamRequest.PromptCacheKey != "" {
+				t.Errorf("PromptCacheKey = %v, want empty", upstreamRequest.PromptCacheKey)
+			}
+
 			if !strings.Contains(
 				string(requestBody),
 				`"stream":true`,
@@ -154,7 +181,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high"}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":""}`,
 		),
 	)
 
@@ -215,6 +242,11 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				TopLogprobs         *int     `json:"top_logprobs"`
 				ReasoningEffort     *string  `json:"reasoning_effort"`
 				Verbosity           *string  `json:"verbosity"`
+				Seed                *int64   `json:"seed"`
+				Store               *bool    `json:"store"`
+				ParallelToolCalls   *bool    `json:"parallel_tool_calls"`
+				SafetyIdentifier    *string  `json:"safety_identifier"`
+				PromptCacheKey      *string  `json:"prompt_cache_key"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -293,6 +325,13 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 					"Verbosity = %v, want medium",
 					upstreamRequest.Verbosity,
 				)
+			}
+
+			if upstreamRequest.Seed != nil || upstreamRequest.Store != nil ||
+				upstreamRequest.ParallelToolCalls != nil ||
+				upstreamRequest.SafetyIdentifier != nil ||
+				upstreamRequest.PromptCacheKey != nil {
+				t.Errorf("omitted scalar controls reached upstream: %+v", upstreamRequest)
 			}
 
 			if strings.Contains(string(requestBody), `"stream":true`) {
