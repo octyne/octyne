@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"testing"
 
 	openaicompat "github.com/octyne/octyne/internal/compat/openai"
@@ -441,5 +442,31 @@ func TestToCanonicalChatRequestTranslatesAudioOutput(t *testing.T) {
 	if got.AudioOutput == nil || got.AudioOutput.Format != types.AudioFormatMP3 ||
 		got.AudioOutput.Voice.ID == nil || *got.AudioOutput.Voice.ID != voiceID {
 		t.Errorf("AudioOutput = %+v, want mp3/custom voice", got.AudioOutput)
+	}
+}
+
+func TestToCanonicalChatRequestTranslatesResponseFormat(t *testing.T) {
+	schema := json.RawMessage(`{}`)
+	strict := false
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		ResponseFormat: &openaicompat.ResponseFormat{
+			Type: openaicompat.ResponseFormatJSONSchema,
+			JSONSchema: &openaicompat.JSONSchemaFormat{
+				Name:   "answer",
+				Schema: &schema,
+				Strict: &strict,
+			},
+		},
+	})
+
+	if got.ResponseFormat == nil ||
+		got.ResponseFormat.Type != types.ResponseFormatJSONSchema ||
+		got.ResponseFormat.JSONSchema == nil ||
+		got.ResponseFormat.JSONSchema.Name != "answer" ||
+		got.ResponseFormat.JSONSchema.Schema == nil ||
+		string(*got.ResponseFormat.JSONSchema.Schema) != `{}` ||
+		got.ResponseFormat.JSONSchema.Strict == nil ||
+		*got.ResponseFormat.JSONSchema.Strict {
+		t.Errorf("ResponseFormat = %+v, want typed JSON schema", got.ResponseFormat)
 	}
 }

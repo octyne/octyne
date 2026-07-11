@@ -80,6 +80,14 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 					Format string          `json:"format"`
 					Voice  json.RawMessage `json:"voice"`
 				} `json:"audio"`
+				ResponseFormat *struct {
+					Type       string `json:"type"`
+					JSONSchema *struct {
+						Name   string          `json:"name"`
+						Schema json.RawMessage `json:"schema"`
+						Strict *bool           `json:"strict"`
+					} `json:"json_schema"`
+				} `json:"response_format"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -227,6 +235,15 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				string(upstreamRequest.Audio.Voice) != `{"id":"voice_123"}` {
 				t.Errorf("Audio = %+v, want mp3/custom voice", upstreamRequest.Audio)
 			}
+			if upstreamRequest.ResponseFormat == nil ||
+				upstreamRequest.ResponseFormat.Type != "json_schema" ||
+				upstreamRequest.ResponseFormat.JSONSchema == nil ||
+				upstreamRequest.ResponseFormat.JSONSchema.Name != "answer" ||
+				string(upstreamRequest.ResponseFormat.JSONSchema.Schema) != `{}` ||
+				upstreamRequest.ResponseFormat.JSONSchema.Strict == nil ||
+				*upstreamRequest.ResponseFormat.JSONSchema.Strict {
+				t.Errorf("ResponseFormat = %+v, want typed JSON schema", upstreamRequest.ResponseFormat)
+			}
 
 			if !strings.Contains(
 				string(requestBody),
@@ -255,7 +272,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}}}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}},"response_format":{"type":"json_schema","json_schema":{"name":"answer","schema":{},"strict":false}}}`,
 		),
 	)
 

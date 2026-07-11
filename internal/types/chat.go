@@ -1,5 +1,7 @@
 package types
 
+import "encoding/json"
+
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -39,6 +41,26 @@ type AudioOutput struct {
 	Voice  AudioVoice  `json:"voice"`
 }
 
+type ResponseFormatType string
+
+const (
+	ResponseFormatText       ResponseFormatType = "text"
+	ResponseFormatJSONObject ResponseFormatType = "json_object"
+	ResponseFormatJSONSchema ResponseFormatType = "json_schema"
+)
+
+type JSONSchemaFormat struct {
+	Name        string           `json:"name"`
+	Description *string          `json:"description,omitempty"`
+	Schema      *json.RawMessage `json:"schema,omitempty"`
+	Strict      *bool            `json:"strict,omitempty"`
+}
+
+type ResponseFormat struct {
+	Type       ResponseFormatType `json:"type"`
+	JSONSchema *JSONSchemaFormat  `json:"json_schema,omitempty"`
+}
+
 type ChatCompletionRequest struct {
 	Model                  string                `json:"model"`
 	Messages               []Message             `json:"messages"`
@@ -69,6 +91,7 @@ type ChatCompletionRequest struct {
 	StreamOptions          *StreamOptions        `json:"stream_options,omitempty"`
 	Modalities             *Modalities           `json:"modalities,omitempty"`
 	AudioOutput            *AudioOutput          `json:"audio_output,omitempty"`
+	ResponseFormat         *ResponseFormat       `json:"response_format,omitempty"`
 }
 
 type Choice struct {

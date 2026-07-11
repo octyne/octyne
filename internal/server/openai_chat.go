@@ -46,7 +46,24 @@ func toCanonicalChatRequest(
 		StreamOptions:          toCanonicalStreamOptions(req.StreamOptions),
 		Modalities:             toCanonicalModalities(req.Modalities),
 		AudioOutput:            toCanonicalAudioOutput(req.Audio),
+		ResponseFormat:         toCanonicalResponseFormat(req.ResponseFormat),
 	}
+}
+
+func toCanonicalResponseFormat(value *openaicompat.ResponseFormat) *types.ResponseFormat {
+	if value == nil {
+		return nil
+	}
+	converted := &types.ResponseFormat{Type: types.ResponseFormatType(value.Type)}
+	if value.JSONSchema != nil {
+		converted.JSONSchema = &types.JSONSchemaFormat{
+			Name:        value.JSONSchema.Name,
+			Description: value.JSONSchema.Description,
+			Schema:      value.JSONSchema.Schema,
+			Strict:      value.JSONSchema.Strict,
+		}
+	}
+	return converted
 }
 
 func toCanonicalModalities(value *openaicompat.Modalities) *types.Modalities {
