@@ -10,6 +10,7 @@ type ChatCompletionRequest struct {
 	Messages    []Message `json:"messages"`
 	Stream      bool      `json:"stream,omitempty"`
 	Temperature *float64  `json:"temperature,omitempty"`
+	TopP        *float64  `json:"top_p,omitempty"`
 }
 
 type Choice struct {

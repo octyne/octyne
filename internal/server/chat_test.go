@@ -45,6 +45,24 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				)
 			}
 
+			var upstreamRequest struct {
+				TopP *float64 `json:"top_p"`
+			}
+
+			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
+				t.Errorf("decode upstream request: %v", err)
+				return
+			}
+
+			if upstreamRequest.TopP == nil {
+				t.Error("TopP = nil, want explicit zero")
+			} else if *upstreamRequest.TopP != 0 {
+				t.Errorf(
+					"TopP = %v, want 0",
+					*upstreamRequest.TopP,
+				)
+			}
+
 			if !strings.Contains(
 				string(requestBody),
 				`"stream":true`,
@@ -72,7 +90,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0}`,
 		),
 	)
 
@@ -124,6 +142,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 
 			var upstreamRequest struct {
 				Temperature *float64 `json:"temperature"`
+				TopP        *float64 `json:"top_p"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -137,6 +156,13 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 				t.Errorf(
 					"Temperature = %v, want 0",
 					*upstreamRequest.Temperature,
+				)
+			}
+
+			if upstreamRequest.TopP != nil {
+				t.Errorf(
+					"TopP = %v, want nil",
+					*upstreamRequest.TopP,
 				)
 			}
 
