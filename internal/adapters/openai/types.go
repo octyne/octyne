@@ -53,6 +53,26 @@ type AudioOutput struct {
 	Voice  AudioVoice  `json:"voice"`
 }
 
+type ResponseFormatType string
+
+const (
+	ResponseFormatText       ResponseFormatType = "text"
+	ResponseFormatJSONObject ResponseFormatType = "json_object"
+	ResponseFormatJSONSchema ResponseFormatType = "json_schema"
+)
+
+type JSONSchemaFormat struct {
+	Name        string           `json:"name"`
+	Description *string          `json:"description,omitempty"`
+	Schema      *json.RawMessage `json:"schema,omitempty"`
+	Strict      *bool            `json:"strict,omitempty"`
+}
+
+type ResponseFormat struct {
+	Type       ResponseFormatType `json:"type"`
+	JSONSchema *JSONSchemaFormat  `json:"json_schema,omitempty"`
+}
+
 type ReasoningEffort string
 
 const (
@@ -143,6 +163,7 @@ type ChatCompletionRequest struct {
 	StreamOptions        *StreamOptions        `json:"stream_options,omitempty"`
 	Modalities           *Modalities           `json:"modalities,omitempty"`
 	Audio                *AudioOutput          `json:"audio,omitempty"`
+	ResponseFormat       *ResponseFormat       `json:"response_format,omitempty"`
 }
 
 type Choice struct {

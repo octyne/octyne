@@ -45,7 +45,24 @@ func toChatCompletionRequest(
 		StreamOptions:        toStreamOptions(req.StreamOptions),
 		Modalities:           toModalities(req.Modalities),
 		Audio:                toAudioOutput(req.AudioOutput),
+		ResponseFormat:       toResponseFormat(req.ResponseFormat),
 	}
+}
+
+func toResponseFormat(value *types.ResponseFormat) *ResponseFormat {
+	if value == nil {
+		return nil
+	}
+	converted := &ResponseFormat{Type: ResponseFormatType(value.Type)}
+	if value.JSONSchema != nil {
+		converted.JSONSchema = &JSONSchemaFormat{
+			Name:        value.JSONSchema.Name,
+			Description: value.JSONSchema.Description,
+			Schema:      value.JSONSchema.Schema,
+			Strict:      value.JSONSchema.Strict,
+		}
+	}
+	return converted
 }
 
 func toModalities(value *types.Modalities) *Modalities {
