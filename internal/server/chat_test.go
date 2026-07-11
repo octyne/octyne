@@ -46,20 +46,23 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
-				TopP                *float64 `json:"top_p"`
-				FrequencyPenalty    *float64 `json:"frequency_penalty"`
-				PresencePenalty     *float64 `json:"presence_penalty"`
-				MaxCompletionTokens *int     `json:"max_completion_tokens"`
-				N                   *int     `json:"n"`
-				Logprobs            *bool    `json:"logprobs"`
-				TopLogprobs         *int     `json:"top_logprobs"`
-				ReasoningEffort     *string  `json:"reasoning_effort"`
-				Verbosity           *string  `json:"verbosity"`
-				Seed                *int64   `json:"seed"`
-				Store               *bool    `json:"store"`
-				ParallelToolCalls   *bool    `json:"parallel_tool_calls"`
-				SafetyIdentifier    *string  `json:"safety_identifier"`
-				PromptCacheKey      *string  `json:"prompt_cache_key"`
+				TopP                 *float64 `json:"top_p"`
+				FrequencyPenalty     *float64 `json:"frequency_penalty"`
+				PresencePenalty      *float64 `json:"presence_penalty"`
+				MaxCompletionTokens  *int     `json:"max_completion_tokens"`
+				N                    *int     `json:"n"`
+				Logprobs             *bool    `json:"logprobs"`
+				TopLogprobs          *int     `json:"top_logprobs"`
+				ReasoningEffort      *string  `json:"reasoning_effort"`
+				Verbosity            *string  `json:"verbosity"`
+				Seed                 *int64   `json:"seed"`
+				Store                *bool    `json:"store"`
+				ParallelToolCalls    *bool    `json:"parallel_tool_calls"`
+				SafetyIdentifier     *string  `json:"safety_identifier"`
+				PromptCacheKey       *string  `json:"prompt_cache_key"`
+				MaxTokens            *int     `json:"max_tokens"`
+				User                 *string  `json:"user"`
+				PromptCacheRetention *string  `json:"prompt_cache_retention"`
 			}
 
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
@@ -153,6 +156,19 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 				*upstreamRequest.PromptCacheKey != "" {
 				t.Errorf("PromptCacheKey = %v, want empty", upstreamRequest.PromptCacheKey)
 			}
+			if upstreamRequest.MaxTokens == nil || *upstreamRequest.MaxTokens != 0 {
+				t.Errorf("MaxTokens = %v, want explicit zero", upstreamRequest.MaxTokens)
+			}
+			if upstreamRequest.User == nil || *upstreamRequest.User != "" {
+				t.Errorf("User = %v, want empty", upstreamRequest.User)
+			}
+			if upstreamRequest.PromptCacheRetention == nil ||
+				*upstreamRequest.PromptCacheRetention != "24h" {
+				t.Errorf(
+					"PromptCacheRetention = %v, want 24h",
+					upstreamRequest.PromptCacheRetention,
+				)
+			}
 
 			if !strings.Contains(
 				string(requestBody),
@@ -181,7 +197,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":""}`,
+			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h"}`,
 		),
 	)
 

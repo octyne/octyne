@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	openaicompat "github.com/octyne/octyne/internal/compat/openai"
+	"github.com/octyne/octyne/internal/types"
 )
 
 func TestToCanonicalChatRequest(t *testing.T) {
@@ -330,5 +331,27 @@ func TestToCanonicalChatRequestPreservesScalarControls(t *testing.T) {
 		omitted.AllowParallelToolCalls != nil ||
 		omitted.SafetyIdentifier != nil || omitted.PromptCacheKey != nil {
 		t.Errorf("omitted scalar controls were not preserved: %+v", omitted)
+	}
+}
+
+func TestToCanonicalChatRequestPreservesDeprecatedControls(t *testing.T) {
+	zero := 0
+	empty := ""
+	retention := openaicompat.PromptCacheRetention24h
+
+	got := toCanonicalChatRequest(openaicompat.ChatCompletionRequest{
+		MaxTokens:            &zero,
+		User:                 &empty,
+		PromptCacheRetention: &retention,
+	})
+
+	if got.LegacyMaxOutputTokens == nil || *got.LegacyMaxOutputTokens != 0 {
+		t.Errorf("LegacyMaxOutputTokens = %v, want explicit zero", got.LegacyMaxOutputTokens)
+	}
+	if got.LegacyUser == nil || *got.LegacyUser != "" {
+		t.Errorf("LegacyUser = %v, want explicit empty string", got.LegacyUser)
+	}
+	if got.PromptCacheRetention == nil || *got.PromptCacheRetention != types.PromptCacheRetention24h {
+		t.Errorf("PromptCacheRetention = %v, want 24h", got.PromptCacheRetention)
 	}
 }
