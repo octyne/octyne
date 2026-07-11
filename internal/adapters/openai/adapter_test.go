@@ -13,6 +13,13 @@ import (
 	"github.com/octyne/octyne/internal/types"
 )
 
+func testTextChatMessage(role, text string) types.ChatMessage {
+	return types.ChatMessage{
+		Role:    role,
+		Content: &types.MessageContent{Text: &text},
+	}
+}
+
 func TestStreamChatDoesNotUseTotalRequestTimeout(t *testing.T) {
 	const timeout = 100 * time.Millisecond
 
@@ -56,13 +63,8 @@ data: [DONE]
 	chunks, err := adapter.StreamChat(
 		context.Background(),
 		types.ChatCompletionRequest{
-			Model: "gpt-5-nano",
-			Messages: []types.Message{
-				{
-					Role:    "user",
-					Content: "Hello",
-				},
-			},
+			Model:    "gpt-5-nano",
+			Messages: []types.ChatMessage{testTextChatMessage("user", "Hello")},
 		},
 	)
 	if err != nil {
@@ -107,10 +109,8 @@ func TestStreamChatReturnsUpstreamSetupError(t *testing.T) {
 	chunks, err := adapter.StreamChat(
 		context.Background(),
 		types.ChatCompletionRequest{
-			Model: "gpt-5-nano",
-			Messages: []types.Message{
-				{Role: "user", Content: "Hello"},
-			},
+			Model:    "gpt-5-nano",
+			Messages: []types.ChatMessage{testTextChatMessage("user", "Hello")},
 		},
 	)
 
@@ -160,10 +160,8 @@ func TestStreamChatPropagatesContextCancellation(t *testing.T) {
 	chunks, err := adapter.StreamChat(
 		ctx,
 		types.ChatCompletionRequest{
-			Model: "gpt-5-nano",
-			Messages: []types.Message{
-				{Role: "user", Content: "Hello"},
-			},
+			Model:    "gpt-5-nano",
+			Messages: []types.ChatMessage{testTextChatMessage("user", "Hello")},
 		},
 	)
 	if err != nil {

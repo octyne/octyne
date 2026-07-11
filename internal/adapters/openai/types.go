@@ -211,7 +211,7 @@ type StreamOptions struct {
 
 type ChatCompletionRequest struct {
 	Model                string                      `json:"model"`
-	Messages             []Message                   `json:"messages"`
+	Messages             []RequestMessage            `json:"messages"`
 	Stream               bool                        `json:"stream,omitempty"`
 	Temperature          *float64                    `json:"temperature,omitempty"`
 	TopP                 *float64                    `json:"top_p,omitempty"`
