@@ -38,7 +38,44 @@ func toCanonicalChatRequest(
 		LegacyMaxOutputTokens:  req.MaxTokens,
 		LegacyUser:             req.User,
 		PromptCacheRetention:   toCanonicalPromptCacheRetention(req.PromptCacheRetention),
+		Metadata:               toCanonicalMetadata(req.Metadata),
+		ServiceTier:            toCanonicalServiceTier(req.ServiceTier),
+		PromptCacheOptions:     toCanonicalPromptCacheOptions(req.PromptCacheOptions),
 	}
+}
+
+func toCanonicalMetadata(value *openaicompat.Metadata) *types.Metadata {
+	if value == nil {
+		return nil
+	}
+	converted := types.Metadata(*value)
+	return &converted
+}
+
+func toCanonicalServiceTier(value *openaicompat.ServiceTier) *types.ServiceTier {
+	if value == nil {
+		return nil
+	}
+	converted := types.ServiceTier(*value)
+	return &converted
+}
+
+func toCanonicalPromptCacheOptions(
+	value *openaicompat.PromptCacheOptions,
+) *types.PromptCacheOptions {
+	if value == nil {
+		return nil
+	}
+	converted := &types.PromptCacheOptions{}
+	if value.Mode != nil {
+		mode := types.PromptCacheMode(*value.Mode)
+		converted.Mode = &mode
+	}
+	if value.TTL != nil {
+		ttl := types.PromptCacheTTL(*value.TTL)
+		converted.TTL = &ttl
+	}
+	return converted
 }
 
 func toCanonicalPromptCacheRetention(

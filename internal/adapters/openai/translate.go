@@ -37,7 +37,42 @@ func toChatCompletionRequest(
 		MaxTokens:            req.LegacyMaxOutputTokens,
 		User:                 req.LegacyUser,
 		PromptCacheRetention: toPromptCacheRetention(req.PromptCacheRetention),
+		Metadata:             toMetadata(req.Metadata),
+		ServiceTier:          toServiceTier(req.ServiceTier),
+		PromptCacheOptions:   toPromptCacheOptions(req.PromptCacheOptions),
 	}
+}
+
+func toMetadata(value *types.Metadata) *Metadata {
+	if value == nil {
+		return nil
+	}
+	converted := Metadata(*value)
+	return &converted
+}
+
+func toServiceTier(value *types.ServiceTier) *ServiceTier {
+	if value == nil {
+		return nil
+	}
+	converted := ServiceTier(*value)
+	return &converted
+}
+
+func toPromptCacheOptions(value *types.PromptCacheOptions) *PromptCacheOptions {
+	if value == nil {
+		return nil
+	}
+	converted := &PromptCacheOptions{}
+	if value.Mode != nil {
+		mode := PromptCacheMode(*value.Mode)
+		converted.Mode = &mode
+	}
+	if value.TTL != nil {
+		ttl := PromptCacheTTL(*value.TTL)
+		converted.TTL = &ttl
+	}
+	return converted
 }
 
 func toPromptCacheRetention(
