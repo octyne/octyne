@@ -25,6 +25,8 @@ func toChatCompletionRequest(
 		PresencePenalty:     req.PresencePenalty,
 		MaxCompletionTokens: req.MaxOutputTokens,
 		N:                   req.CandidateCount,
+		Logprobs:            req.ReturnLogprobs,
+		TopLogprobs:         req.TopLogprobs,
 	}
 }
 

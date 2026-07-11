@@ -15,4 +15,6 @@ type ChatCompletionRequest struct {
 	PresencePenalty     *float64  `json:"presence_penalty,omitempty"`
 	MaxCompletionTokens *int      `json:"max_completion_tokens,omitempty"`
 	N                   *int      `json:"n,omitempty"`
+	Logprobs            *bool     `json:"logprobs,omitempty"`
+	TopLogprobs         *int      `json:"top_logprobs,omitempty"`
 }

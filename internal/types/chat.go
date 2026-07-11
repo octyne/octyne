@@ -15,6 +15,8 @@ type ChatCompletionRequest struct {
 	PresencePenalty  *float64  `json:"presence_penalty,omitempty"`
 	MaxOutputTokens  *int      `json:"max_output_tokens,omitempty"`
 	CandidateCount   *int      `json:"candidate_count,omitempty"`
+	ReturnLogprobs   *bool     `json:"return_logprobs,omitempty"`
+	TopLogprobs      *int      `json:"top_logprobs,omitempty"`
 }
 
 type Choice struct {

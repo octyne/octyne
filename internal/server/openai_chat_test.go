@@ -13,6 +13,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 	zeroPresencePenalty := 0.0
 	zeroMaxCompletionTokens := 0
 	zeroN := 0
+	falseLogprobs := false
+	zeroTopLogprobs := 0
 	tests := []struct {
 		name                string
 		stream              bool
@@ -22,6 +24,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 		presencePenalty     *float64
 		maxCompletionTokens *int
 		n                   *int
+		logprobs            *bool
+		topLogprobs         *int
 	}{
 		{name: "omitted sampling fields", stream: false},
 		{name: "explicit zero temperature", stream: true, temperature: &zeroTemperature},
@@ -40,6 +44,11 @@ func TestToCanonicalChatRequest(t *testing.T) {
 			maxCompletionTokens: &zeroMaxCompletionTokens,
 		},
 		{name: "explicit zero n", n: &zeroN},
+		{name: "explicit false logprobs", logprobs: &falseLogprobs},
+		{
+			name:        "explicit zero top logprobs",
+			topLogprobs: &zeroTopLogprobs,
+		},
 	}
 
 	for _, tt := range tests {
@@ -59,6 +68,8 @@ func TestToCanonicalChatRequest(t *testing.T) {
 				PresencePenalty:     tt.presencePenalty,
 				MaxCompletionTokens: tt.maxCompletionTokens,
 				N:                   tt.n,
+				Logprobs:            tt.logprobs,
+				TopLogprobs:         tt.topLogprobs,
 			}
 
 			got := toCanonicalChatRequest(req)
@@ -182,6 +193,40 @@ func TestToCanonicalChatRequest(t *testing.T) {
 					"CandidateCount = %v, want %v",
 					*got.CandidateCount,
 					*tt.n,
+				)
+			}
+
+			if tt.logprobs == nil {
+				if got.ReturnLogprobs != nil {
+					t.Errorf(
+						"ReturnLogprobs = %v, want nil",
+						got.ReturnLogprobs,
+					)
+				}
+			} else if got.ReturnLogprobs == nil {
+				t.Fatal("ReturnLogprobs = nil, want explicit value")
+			} else if *got.ReturnLogprobs != *tt.logprobs {
+				t.Errorf(
+					"ReturnLogprobs = %t, want %t",
+					*got.ReturnLogprobs,
+					*tt.logprobs,
+				)
+			}
+
+			if tt.topLogprobs == nil {
+				if got.TopLogprobs != nil {
+					t.Errorf(
+						"TopLogprobs = %v, want nil",
+						got.TopLogprobs,
+					)
+				}
+			} else if got.TopLogprobs == nil {
+				t.Fatal("TopLogprobs = nil, want explicit value")
+			} else if *got.TopLogprobs != *tt.topLogprobs {
+				t.Errorf(
+					"TopLogprobs = %d, want %d",
+					*got.TopLogprobs,
+					*tt.topLogprobs,
 				)
 			}
 
