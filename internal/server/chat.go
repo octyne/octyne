@@ -5,26 +5,29 @@ import (
 	"fmt"
 	"net/http"
 
+	openaicompat "github.com/octyne/octyne/internal/compat/openai"
 	"github.com/octyne/octyne/internal/types"
 )
 
 func (s *Server) chatHandler(w http.ResponseWriter, r *http.Request) {
-	var req types.ChatCompletionRequest
+	var compatReq openaicompat.ChatCompletionRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&compatReq); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if req.Model == "" {
+	if compatReq.Model == "" {
 		http.Error(w, "model is required", http.StatusBadRequest)
 		return
 	}
 
-	if len(req.Messages) == 0 {
+	if len(compatReq.Messages) == 0 {
 		http.Error(w, "messages are required", http.StatusBadRequest)
 		return
 	}
+
+	req := toCanonicalChatRequest(compatReq)
 
 	if req.Stream {
 		s.streamChat(w, r, req)
