@@ -8,17 +8,9 @@ import (
 func toCanonicalChatRequest(
 	req openaicompat.ChatCompletionRequest,
 ) types.ChatCompletionRequest {
-	messages := make([]types.Message, len(req.Messages))
-
-	for i, message := range req.Messages {
-		messages[i] = types.Message{
-			Role:    message.Role,
-			Content: message.Content,
-		}
-	}
 	return types.ChatCompletionRequest{
 		Model:                  req.Model,
-		Messages:               messages,
+		Messages:               toCanonicalMessages(req.Messages),
 		Stream:                 req.Stream,
 		Temperature:            req.Temperature,
 		TopP:                   req.TopP,

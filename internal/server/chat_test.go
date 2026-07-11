@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +15,47 @@ import (
 	"github.com/octyne/octyne/internal/providers"
 	"github.com/octyne/octyne/internal/types"
 )
+
+func TestChatHandlerForwardsRoleSpecificMessages(t *testing.T) {
+	const messagesJSON = `[
+		{"role":"developer","content":[{"type":"text","text":"rules","prompt_cache_breakpoint":{"mode":"explicit"}}]},
+		{"role":"system","content":"system"},
+		{"role":"user","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,AA==","detail":"low"}},{"type":"input_audio","input_audio":{"data":"AA==","format":"wav"}},{"type":"file","file":{"file_id":"file_1"}}]},
+		{"role":"assistant","audio":{"id":"audio_1"},"content":null,"refusal":"","tool_calls":[{"id":"call_1","type":"function","function":{"arguments":"{}","name":"weather"}},{"id":"call_2","type":"custom","custom":{"input":"pwd","name":"shell"}}]},
+		{"role":"tool","content":[{"type":"text","text":"sunny"}],"tool_call_id":"call_1"},
+		{"role":"function","content":"legacy result","name":"legacy"}
+	]`
+
+	server := newTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var upstream struct {
+			Messages json.RawMessage `json:"messages"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&upstream); err != nil {
+			t.Errorf("decode upstream: %v", err)
+			return
+		}
+		var got, want any
+		if err := json.Unmarshal(upstream.Messages, &got); err != nil {
+			t.Errorf("decode upstream messages: %v", err)
+			return
+		}
+		if err := json.Unmarshal([]byte(messagesJSON), &want); err != nil {
+			t.Fatalf("decode expected messages: %v", err)
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("upstream messages = %s, want %s", upstream.Messages, messagesJSON)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"id":"chatcmpl-rich","object":"chat.completion","created":1,"model":"gpt-5-nano","choices":[]}`)
+	}))
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"gpt-5-nano","messages":`+messagesJSON+`}`))
+	recorder := httptest.NewRecorder()
+	server.mux.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d: %s", recorder.Code, recorder.Body.String())
+	}
+}
 
 func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 	server := newTestServer(t, http.HandlerFunc(

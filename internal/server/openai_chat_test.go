@@ -68,8 +68,12 @@ func TestToCanonicalChatRequest(t *testing.T) {
 				Model: "gpt-5-nano",
 				Messages: []openaicompat.Message{
 					{
-						Role:    "user",
-						Content: "Hello",
+						User: &openaicompat.UserMessage{
+							Role: "user",
+							Content: openaicompat.MessageContent{
+								Text: stringPointer("Hello"),
+							},
+						},
 					},
 				},
 				Stream:              tt.stream,
@@ -285,15 +289,19 @@ func TestToCanonicalChatRequest(t *testing.T) {
 				)
 			}
 
-			if got.Messages[0].Content != "Hello" {
+			if got.Messages[0].Content == nil ||
+				got.Messages[0].Content.Text == nil ||
+				*got.Messages[0].Content.Text != "Hello" {
 				t.Errorf(
-					"Message.Content = %q, want Hello",
+					"Message.Content = %v, want Hello",
 					got.Messages[0].Content,
 				)
 			}
 		})
 	}
 }
+
+func stringPointer(value string) *string { return &value }
 
 func TestToCanonicalChatRequestPreservesScalarControls(t *testing.T) {
 	zeroSeed := int64(0)
