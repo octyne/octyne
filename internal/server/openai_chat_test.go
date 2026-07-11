@@ -10,12 +10,18 @@ func TestToCanonicalChatRequest(t *testing.T) {
 	zeroTemperature := 0.0
 	zeroTopP := 0.0
 	zeroFrequencyPenalty := 0.0
+	zeroPresencePenalty := 0.0
+	zeroMaxCompletionTokens := 0
+	zeroN := 0
 	tests := []struct {
-		name             string
-		stream           bool
-		temperature      *float64
-		topP             *float64
-		frequencyPenalty *float64
+		name                string
+		stream              bool
+		temperature         *float64
+		topP                *float64
+		frequencyPenalty    *float64
+		presencePenalty     *float64
+		maxCompletionTokens *int
+		n                   *int
 	}{
 		{name: "omitted sampling fields", stream: false},
 		{name: "explicit zero temperature", stream: true, temperature: &zeroTemperature},
@@ -25,6 +31,15 @@ func TestToCanonicalChatRequest(t *testing.T) {
 			stream:           true,
 			frequencyPenalty: &zeroFrequencyPenalty,
 		},
+		{
+			name:            "explicit zero presence penalty",
+			presencePenalty: &zeroPresencePenalty,
+		},
+		{
+			name:                "explicit zero max completion tokens",
+			maxCompletionTokens: &zeroMaxCompletionTokens,
+		},
+		{name: "explicit zero n", n: &zeroN},
 	}
 
 	for _, tt := range tests {
@@ -37,10 +52,13 @@ func TestToCanonicalChatRequest(t *testing.T) {
 						Content: "Hello",
 					},
 				},
-				Stream:           tt.stream,
-				Temperature:      tt.temperature,
-				TopP:             tt.topP,
-				FrequencyPenalty: tt.frequencyPenalty,
+				Stream:              tt.stream,
+				Temperature:         tt.temperature,
+				TopP:                tt.topP,
+				FrequencyPenalty:    tt.frequencyPenalty,
+				PresencePenalty:     tt.presencePenalty,
+				MaxCompletionTokens: tt.maxCompletionTokens,
+				N:                   tt.n,
 			}
 
 			got := toCanonicalChatRequest(req)
@@ -114,6 +132,57 @@ func TestToCanonicalChatRequest(t *testing.T) {
 						*tt.frequencyPenalty,
 					)
 				}
+			}
+
+			if tt.presencePenalty == nil {
+				if got.PresencePenalty != nil {
+					t.Errorf(
+						"PresencePenalty = %v, want nil",
+						got.PresencePenalty,
+					)
+				}
+			} else if got.PresencePenalty == nil {
+				t.Fatal("PresencePenalty = nil, want explicit value")
+			} else if *got.PresencePenalty != *tt.presencePenalty {
+				t.Errorf(
+					"PresencePenalty = %v, want %v",
+					*got.PresencePenalty,
+					*tt.presencePenalty,
+				)
+			}
+
+			if tt.maxCompletionTokens == nil {
+				if got.MaxOutputTokens != nil {
+					t.Errorf(
+						"MaxOutputTokens = %v, want nil",
+						got.MaxOutputTokens,
+					)
+				}
+			} else if got.MaxOutputTokens == nil {
+				t.Fatal("MaxOutputTokens = nil, want explicit value")
+			} else if *got.MaxOutputTokens != *tt.maxCompletionTokens {
+				t.Errorf(
+					"MaxOutputTokens = %v, want %v",
+					*got.MaxOutputTokens,
+					*tt.maxCompletionTokens,
+				)
+			}
+
+			if tt.n == nil {
+				if got.CandidateCount != nil {
+					t.Errorf(
+						"CandidateCount = %v, want nil",
+						got.CandidateCount,
+					)
+				}
+			} else if got.CandidateCount == nil {
+				t.Fatal("CandidateCount = nil, want explicit value")
+			} else if *got.CandidateCount != *tt.n {
+				t.Errorf(
+					"CandidateCount = %v, want %v",
+					*got.CandidateCount,
+					*tt.n,
+				)
 			}
 
 			if len(got.Messages) != 1 {

@@ -23,5 +23,8 @@ func toCanonicalChatRequest(
 		Temperature:      req.Temperature,
 		TopP:             req.TopP,
 		FrequencyPenalty: req.FrequencyPenalty,
+		PresencePenalty:  req.PresencePenalty,
+		MaxOutputTokens:  req.MaxCompletionTokens,
+		CandidateCount:   req.N,
 	}
 }
