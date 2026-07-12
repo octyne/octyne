@@ -14,7 +14,7 @@ The executable entry point is `cmd/octyne/main.go`; keep it small. `internal/app
 
 ## Build, Test, and Development Commands
 
-- `go run ./cmd/octyne`: start the local server. Requires `.env` values such as `OPENAI_API_KEY` and optionally `PORT`.
+- `go run ./cmd/octyne`: start the local server. Requires `.env` values such as `OCTYNE_API_KEYS` and `OPENAI_API_KEY`, and optionally `PORT`.
 - `go build ./cmd/octyne`: compile the Octyne binary.
 - `go test ./...`: run all package tests; use this before opening a PR even when adding only one package.
 - `go vet ./...`: catch common Go correctness issues before commits.
@@ -45,7 +45,7 @@ Do code changes on focused branches and raise pull requests into `main`; do not 
 
 ## Current Development State
 
-The OpenAI Chat Completions vertical slice is complete for both non-streaming JSON and streaming SSE. It includes the full typed request and response surfaces, an injected model registry, public-to-upstream model mapping, `GET /v1/models`, request IDs, OpenAI-compatible errors, explicit server timeouts, graceful shutdown, structured request logging, cancellation, and focused translation and HTTP tests. The next priority is to move startup model registration toward configuration, then add Octyne API authentication separate from provider credentials.
+The OpenAI Chat Completions vertical slice is complete for both non-streaming JSON and streaming SSE. It includes the full typed request and response surfaces, an injected model registry, public-to-upstream model mapping, `GET /v1/models`, request IDs, OpenAI-compatible errors, explicit server timeouts, graceful shutdown, structured request logging, cancellation, and focused translation and HTTP tests. `/v1/*` routes require configuration-backed Octyne bearer keys while `/health` remains public, and client credentials remain separate from upstream provider credentials. The next priorities are direct-provider support and evolving client and provider credentials toward persistent control-plane management and BYOK.
 
 ## Security & Configuration Tips
 

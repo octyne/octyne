@@ -8,7 +8,10 @@ import (
 	"time"
 )
 
+const testClientAPIKey = "test-client-api-key-with-at-least-32-characters"
+
 func TestLoadReturnsDefaultOpenAIProvider(t *testing.T) {
+	setValidClientAPIKeys(t)
 	t.Setenv("OPENAI_API_KEY", "test-api-key")
 	unsetEnv(t, "PORT")
 	unsetEnv(t, "OCTYNE_PROVIDERS")
@@ -23,7 +26,8 @@ func TestLoadReturnsDefaultOpenAIProvider(t *testing.T) {
 	}
 
 	want := Config{
-		Port: "3000",
+		Port:          "3000",
+		ClientAPIKeys: []string{testClientAPIKey},
 		Providers: []ProviderConfig{
 			{
 				Name:                           "openai",
@@ -51,6 +55,11 @@ func TestLoadReturnsDefaultOpenAIProvider(t *testing.T) {
 }
 
 func TestLoadReturnsConfiguredOpenAIAndOllamaProviders(t *testing.T) {
+	setValidClientAPIKeys(t)
+	t.Setenv(
+		clientAPIKeysEnv,
+		testClientAPIKey+", second-test-client-api-key-with-at-least-32-characters ",
+	)
 	t.Setenv("PORT", "4321")
 	t.Setenv("OCTYNE_PROVIDERS", " openai, ollama ")
 	t.Setenv("OPENAI_BASE_URL", "https://openai.example/v1/")
@@ -71,6 +80,10 @@ func TestLoadReturnsConfiguredOpenAIAndOllamaProviders(t *testing.T) {
 
 	want := Config{
 		Port: "4321",
+		ClientAPIKeys: []string{
+			testClientAPIKey,
+			"second-test-client-api-key-with-at-least-32-characters",
+		},
 		Providers: []ProviderConfig{
 			{
 				Name:                           "openai",
@@ -112,6 +125,7 @@ func TestProviderEnvPrefixConvertsKebabCase(t *testing.T) {
 }
 
 func TestLoadRequiresOpenAIAPIKey(t *testing.T) {
+	setValidClientAPIKeys(t)
 	unsetEnv(t, "OCTYNE_PROVIDERS")
 	unsetEnv(t, "OPENAI_API_KEY")
 
@@ -125,6 +139,7 @@ func TestLoadRequiresOpenAIAPIKey(t *testing.T) {
 }
 
 func TestLoadRejectsInvalidProviderLists(t *testing.T) {
+	setValidClientAPIKeys(t)
 	tests := []struct {
 		name      string
 		providers string
@@ -171,6 +186,7 @@ func TestLoadRejectsInvalidProviderLists(t *testing.T) {
 }
 
 func TestLoadRequiresExplicitNonOpenAIProviderValues(t *testing.T) {
+	setValidClientAPIKeys(t)
 	tests := []struct {
 		name      string
 		missing   string
@@ -204,6 +220,7 @@ func TestLoadRequiresExplicitNonOpenAIProviderValues(t *testing.T) {
 }
 
 func TestLoadRejectsInvalidProviderValues(t *testing.T) {
+	setValidClientAPIKeys(t)
 	tests := []struct {
 		name      string
 		envName   string
@@ -262,6 +279,75 @@ func TestLoadRejectsInvalidProviderValues(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLoadRequiresClientAPIKeys(t *testing.T) {
+	unsetEnv(t, clientAPIKeysEnv)
+
+	got, err := Load()
+	if err == nil {
+		t.Fatal("Load() error = nil, want missing OCTYNE_API_KEYS error")
+	}
+	if !strings.Contains(err.Error(), "required environment variable OCTYNE_API_KEYS is missing") {
+		t.Errorf("Load() error = %q, want missing OCTYNE_API_KEYS error", err)
+	}
+	if !reflect.DeepEqual(got, Config{}) {
+		t.Errorf("Load() config = %+v, want zero value", got)
+	}
+}
+
+func TestLoadRejectsInvalidClientAPIKeys(t *testing.T) {
+	tests := []struct {
+		name      string
+		value     string
+		wantError string
+	}{
+		{
+			name:      "empty value",
+			value:     "",
+			wantError: "empty key at position 1",
+		},
+		{
+			name:      "empty list entry",
+			value:     testClientAPIKey + ",,second-test-client-api-key-with-at-least-32-characters",
+			wantError: "empty key at position 2",
+		},
+		{
+			name:      "short key",
+			value:     "too-short",
+			wantError: "key at position 1 must contain at least 32 characters",
+		},
+		{
+			name:      "duplicate key",
+			value:     testClientAPIKey + "," + testClientAPIKey,
+			wantError: "duplicate key at position 2",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Setenv(clientAPIKeysEnv, test.value)
+
+			got, err := Load()
+			if err == nil {
+				t.Fatal("Load() error = nil, want client API key validation error")
+			}
+			if !strings.Contains(err.Error(), test.wantError) {
+				t.Errorf("Load() error = %q, want substring %q", err, test.wantError)
+			}
+			if strings.Contains(err.Error(), testClientAPIKey) {
+				t.Error("Load() error exposes a configured client API key")
+			}
+			if !reflect.DeepEqual(got, Config{}) {
+				t.Errorf("Load() config = %+v, want zero value", got)
+			}
+		})
+	}
+}
+
+func setValidClientAPIKeys(t *testing.T) {
+	t.Helper()
+	t.Setenv(clientAPIKeysEnv, testClientAPIKey)
 }
 
 func unsetEnv(t *testing.T, key string) {

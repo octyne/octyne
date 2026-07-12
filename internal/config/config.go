@@ -16,6 +16,8 @@ const (
 	defaultOpenAIModels                   = "gpt-4.1-mini,gpt-5-nano"
 	defaultNonStreamingTimeout            = 600 * time.Second
 	defaultStreamingResponseHeaderTimeout = 30 * time.Second
+	clientAPIKeysEnv                      = "OCTYNE_API_KEYS"
+	minimumClientAPIKeyLength             = 32
 )
 
 type ProviderConfig struct {
@@ -237,9 +239,55 @@ func loadProvider(name string) (ProviderConfig, error) {
 	}, nil
 }
 
+func loadClientAPIKeys() ([]string, error) {
+	value, exists := os.LookupEnv(clientAPIKeysEnv)
+	if !exists {
+		return nil, fmt.Errorf(
+			"required environment variable %s is missing",
+			clientAPIKeysEnv,
+		)
+	}
+
+	parts := strings.Split(value, ",")
+	keys := make([]string, 0, len(parts))
+	seen := make(map[string]struct{}, len(parts))
+
+	for index, part := range parts {
+		key := strings.TrimSpace(part)
+		if key == "" {
+			return nil, fmt.Errorf(
+				"%s contains an empty key at position %d",
+				clientAPIKeysEnv,
+				index+1,
+			)
+		}
+		if len(key) < minimumClientAPIKeyLength {
+			return nil, fmt.Errorf(
+				"%s key at position %d must contain at least %d characters",
+				clientAPIKeysEnv,
+				index+1,
+				minimumClientAPIKeyLength,
+			)
+		}
+		if _, exists := seen[key]; exists {
+			return nil, fmt.Errorf(
+				"%s contains a duplicate key at position %d",
+				clientAPIKeysEnv,
+				index+1,
+			)
+		}
+
+		seen[key] = struct{}{}
+		keys = append(keys, key)
+	}
+
+	return keys, nil
+}
+
 type Config struct {
-	Port      string
-	Providers []ProviderConfig
+	Port          string
+	ClientAPIKeys []string
+	Providers     []ProviderConfig
 }
 
 func Load() (Config, error) {
@@ -247,6 +295,11 @@ func Load() (Config, error) {
 	port, exists := os.LookupEnv("PORT")
 	if !exists {
 		port = "3000"
+	}
+
+	clientAPIKeys, err := loadClientAPIKeys()
+	if err != nil {
+		return Config{}, fmt.Errorf("load client API keys: %w", err)
 	}
 
 	providerNames, err := loadProviderNames()
@@ -269,7 +322,8 @@ func Load() (Config, error) {
 	}
 
 	return Config{
-		Port:      port,
-		Providers: providerConfigs,
+		Port:          port,
+		ClientAPIKeys: clientAPIKeys,
+		Providers:     providerConfigs,
 	}, nil
 }

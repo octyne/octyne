@@ -56,6 +56,13 @@ GET /v1/models
 POST /v1/chat/completions
 ```
 
+`GET /health` is public. `/v1` and all `/v1/*` routes require an Octyne client
+key in the `Authorization: Bearer <key>` header. Startup configuration loads one
+or more client keys from `OCTYNE_API_KEYS`; the runtime verifier retains their
+SHA-256 digests and uses constant-time comparison. These client credentials are
+kept separate from provider API keys, which continue to flow only through
+provider configuration and adapters.
+
 `GET /v1/models` reads the application-owned registry directly and returns the
 OpenAI-compatible model-list envelope. Model IDs are the public
 `provider/model` names clients use for routing, and `owned_by` identifies the
@@ -96,8 +103,8 @@ and response bodies are not logged.
 
 ## Near-Term Priorities
 
-1. Add Octyne API authentication separate from provider credentials.
-2. Continue direct-provider support beyond the reusable OpenAI-compatible path.
+1. Continue direct-provider support beyond the reusable OpenAI-compatible path.
+2. Evolve configuration-backed client authentication toward persistent hashed key management, rotation, and auditability.
 3. Evolve environment-backed provider configuration toward future control-plane storage and credential resolution.
 
 ## Beta Scope

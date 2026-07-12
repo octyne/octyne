@@ -107,18 +107,21 @@ adding those shapes if OpenAI expands the streaming schema.
 ## Completed protocol compatibility
 
 Request and success-response schema coverage is complete for this snapshot.
-Chat Completions also returns OpenAI-compatible error envelopes and status
-codes, adds an Octyne-generated `x-request-id` to every response, forwards that
-value upstream as `X-Client-Request-Id`, sanitizes upstream server failures, and
-retains the provider request ID as internal diagnostic metadata. Streaming
-setup failures use normal JSON errors; failures after SSE headers are committed
-use an error envelope in a `data:` event and do not send `[DONE]`.
+Chat Completions requires an Octyne client key through the bearer
+`Authorization` header and returns an OpenAI-compatible authentication error
+before request decoding when the credential is missing or invalid. It also
+returns OpenAI-compatible error envelopes and status codes, adds an
+Octyne-generated `x-request-id` to every response, forwards that value upstream
+as `X-Client-Request-Id`, sanitizes upstream server failures, and retains the
+provider request ID as internal diagnostic metadata. Streaming setup failures
+use normal JSON errors; failures after SSE headers are committed use an error
+envelope in a `data:` event and do not send `[DONE]`.
 
 The field inventories and translation tests cover all 37 current top-level
 request parameters, typed nested message/tool/content shapes, non-streaming
 response fields, streaming chunk fields, and explicit omission/null behavior.
-Protocol tests cover validation, unknown models, upstream rate limits, safe
-server errors, request-ID correlation, and mid-stream failures.
+Protocol tests cover authentication, validation, unknown models, upstream rate
+limits, safe server errors, request-ID correlation, and mid-stream failures.
 
 No Chat Completions request, success-response, error-envelope, request-ID, or
 stream-framing compatibility item is known to be missing as of this snapshot.

@@ -55,7 +55,7 @@ func TestLoggingResponseWriterPreservesFlushAndUnwrap(t *testing.T) {
 func TestRequestLoggingRecordsStructuredFields(t *testing.T) {
 	var output bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&output, nil))
-	server := New(":0", logger, nil, nil)
+	server := New(":0", logger, nil, nil, newTestVerifier())
 	recorder := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodGet, "/health?api_key=secret", nil)
 
