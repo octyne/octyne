@@ -2,7 +2,6 @@ package app
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/octyne/octyne/internal/adapters/openai"
 	"github.com/octyne/octyne/internal/config"
@@ -18,40 +17,34 @@ type App struct {
 
 func New(appConfig config.Config, logger *slog.Logger) *App {
 	providerRegistry := providers.NewRegistry()
-
-	cfg := providers.Config{
-		Name:                           "openai",
-		BaseURL:                        "https://api.openai.com/v1",
-		APIKey:                         appConfig.OpenAIAPIKey,
-		NonStreamingTimeout:            600 * time.Second,
-		StreamingResponseHeaderTimeout: 30 * time.Second,
-	}
-
-	providerRegistry.Register(
-		"openai",
-		providers.New(
-			cfg,
-			openai.New(cfg),
-		),
-	)
-
 	modelRegistry := registry.NewRegistry()
 
-	modelRegistry.Register(
-		"openai/gpt-4.1-mini",
-		registry.Model{
-			Provider: "openai",
-			ModelID:  "gpt-4.1-mini",
-		},
-	)
+	for _, providerConfig := range appConfig.Providers {
+		runtimeConfig := providers.Config{
+			Name:                           providerConfig.Name,
+			BaseURL:                        providerConfig.BaseURL,
+			APIKey:                         providerConfig.APIKey,
+			NonStreamingTimeout:            providerConfig.NonStreamingTimeout,
+			StreamingResponseHeaderTimeout: providerConfig.StreamingResponseHeaderTimeout,
+		}
 
-	modelRegistry.Register(
-		"openai/gpt-5-nano",
-		registry.Model{
-			Provider: "openai",
-			ModelID:  "gpt-5-nano",
-		},
-	)
+		providerRegistry.Register(
+			providerConfig.Name,
+			providers.New(
+				runtimeConfig,
+				openai.New(runtimeConfig),
+			),
+		)
+		for _, modelConfig := range providerConfig.Models {
+			modelRegistry.Register(
+				modelConfig.PublicName,
+				registry.Model{
+					Provider: providerConfig.Name,
+					ModelID:  modelConfig.UpstreamID,
+				},
+			)
+		}
+	}
 
 	gatewayService := gateway.New(
 		providerRegistry,
