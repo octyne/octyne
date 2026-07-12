@@ -81,18 +81,18 @@ Octyne API keys authenticate clients to Octyne. Provider credentials authenticat
 
 ## Milestone 7: Operational Readiness
 
-- Structured logging.
-- Metrics.
-- Request IDs.
-- Explicit server timeouts.
-- Graceful shutdown.
-- Retry policy where safe.
-- Circuit breaking where appropriate.
-- Rate limiting.
-- Docker image.
-- CI.
-- Release builds.
-- Configuration documentation.
+- [x] Structured logging.
+- [ ] Metrics.
+- [x] Request IDs.
+- [x] Explicit server timeouts.
+- [x] Graceful shutdown.
+- [ ] Retry policy where safe.
+- [ ] Circuit breaking where appropriate.
+- [ ] Rate limiting.
+- [ ] Docker image.
+- [ ] CI.
+- [ ] Release builds.
+- [ ] Configuration documentation.
 
 Retries require care for non-idempotent and streaming operations.
 

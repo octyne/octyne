@@ -164,4 +164,20 @@ sanitized. Once SSE headers are committed, an error is represented as an SSE
 
 ## Operational Direction
 
-Move toward explicit `http.Server` timeouts, graceful shutdown, and structured logging with `log/slog`. Request IDs, bounded provider error body reads, and compatibility-layer error responses are implemented for Chat Completions. Avoid exposing arbitrary internal Go error strings as the public API contract.
+The application owns an explicit `http.Server` configured with bounded
+header-read, request-read, and idle timeouts. The global write timeout is
+disabled because it would impose a fixed deadline on long-lived SSE responses.
+The executable converts `SIGINT` and `SIGTERM` into a lifecycle context, and the
+server stops accepting traffic while allowing active requests to drain for a
+bounded period before force-closing remaining connections.
+
+The composition root injects a `log/slog` logger into the server. Lifecycle and
+completed-request events use structured JSON records. Request logging wraps the
+router after request-ID creation and records method, path, status, response
+bytes, and duration without logging query parameters, headers, or bodies. Its
+response writer preserves flushing and unwrapping so SSE behavior is unchanged.
+
+Request IDs, bounded provider error body reads, and compatibility-layer error
+responses are implemented for Chat Completions. Continue toward metrics,
+tracing, and other operational controls without exposing arbitrary internal Go
+error strings as the public API contract.

@@ -13,6 +13,9 @@ Today it exposes OpenAI-compatible Chat Completions and model-list endpoints and
 - Streaming OpenAI-compatible chat completions over SSE
 - Complete typed Chat Completions requests, success responses, and streaming chunks
 - OpenAI-compatible error envelopes and per-request `x-request-id` headers
+- Explicit downstream HTTP server timeouts with SSE-safe write behavior
+- Graceful shutdown on interrupt and termination signals
+- Structured JSON lifecycle and request logging
 - OpenAI provider adapter
 - Injected in-memory model registry with public-to-upstream model mapping
 - Provider abstraction layer
@@ -174,12 +177,17 @@ provider status, rate-limit, timeout, and internal failures are mapped to safe
 HTTP statuses and public messages instead of exposing arbitrary Go or upstream
 server details.
 
-Every Chat Completions response includes an Octyne-generated `x-request-id`.
-Octyne also sends that value to the OpenAI provider as `X-Client-Request-Id` for
-cross-system correlation while retaining the provider's own request ID as
-internal diagnostic metadata. If a stream fails after its HTTP headers have
-already been sent, Octyne emits an error envelope as an SSE `data:` event and
-does not emit `[DONE]`.
+Every HTTP response includes an Octyne-generated `x-request-id`. For Chat
+Completions, Octyne also sends that value to the OpenAI provider as
+`X-Client-Request-Id` for cross-system correlation while retaining the
+provider's own request ID as internal diagnostic metadata. If a stream fails
+after its HTTP headers have already been sent, Octyne emits an error envelope as
+an SSE `data:` event and does not emit `[DONE]`.
+
+Octyne emits structured JSON logs for server lifecycle and completed requests.
+Request records contain the request ID, method, path, status, response size, and
+duration. Query parameters, headers, and request and response bodies are not
+logged.
 
 ## Supported Models
 
