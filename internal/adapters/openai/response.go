@@ -134,3 +134,32 @@ type ChatCompletionModeration struct {
 	Input  ModerationOutcome `json:"input"`
 	Output ModerationOutcome `json:"output"`
 }
+
+type StreamFunctionCall struct {
+	Arguments *string `json:"arguments,omitempty"`
+	Name      *string `json:"name,omitempty"`
+}
+
+type StreamToolCall struct {
+	Index    int                 `json:"index"`
+	ID       *string             `json:"id,omitempty"`
+	Function *StreamFunctionCall `json:"function,omitempty"`
+	Type     *string             `json:"type,omitempty"`
+}
+
+func (c *ChatCompletionChunk) UnmarshalJSON(data []byte) error {
+	type alias ChatCompletionChunk
+	wire := struct {
+		Usage json.RawMessage `json:"usage"`
+		*alias
+	}{alias: (*alias)(c)}
+	if err := json.Unmarshal(data, &wire); err != nil {
+		return err
+	}
+	c.UsagePresent = len(wire.Usage) != 0
+	c.Usage = nil
+	if !c.UsagePresent || string(wire.Usage) == "null" {
+		return nil
+	}
+	return json.Unmarshal(wire.Usage, &c.Usage)
+}

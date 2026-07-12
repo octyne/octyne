@@ -378,8 +378,11 @@ func toStreamChunk(
 		choices = append(choices, types.StreamChoice{
 			Index: choice.Index,
 			Delta: types.StreamDelta{
-				Role:    choice.Delta.Role,
-				Content: choice.Delta.Content,
+				Content:      choice.Delta.Content,
+				FunctionCall: toStreamFunctionCall(choice.Delta.FunctionCall),
+				Refusal:      choice.Delta.Refusal,
+				Role:         choice.Delta.Role,
+				ToolCalls:    toStreamToolCalls(choice.Delta.ToolCalls),
 			},
 			FinishReason: toFinishReason(choice.FinishReason),
 			Logprobs:     toChatLogprobs(choice.Logprobs),
@@ -387,13 +390,38 @@ func toStreamChunk(
 	}
 
 	return types.StreamChunk{
-		ID:      chunk.ID,
-		Object:  chunk.Object,
-		Created: chunk.Created,
-		Model:   chunk.Model,
-		Choices: choices,
-		Usage:   toCompletionUsage(chunk.Usage),
+		ID:                chunk.ID,
+		Object:            chunk.Object,
+		Created:           chunk.Created,
+		Model:             chunk.Model,
+		Choices:           choices,
+		Moderation:        toChatCompletionModeration(chunk.Moderation),
+		Obfuscation:       chunk.Obfuscation,
+		ServiceTier:       toResponseServiceTier(chunk.ServiceTier),
+		SystemFingerprint: chunk.SystemFingerprint,
+		Usage:             toCompletionUsage(chunk.Usage),
+		UsagePresent:      chunk.UsagePresent,
 	}
+}
+
+func toStreamFunctionCall(value *StreamFunctionCall) *types.StreamFunctionCall {
+	if value == nil {
+		return nil
+	}
+	return &types.StreamFunctionCall{Arguments: value.Arguments, Name: value.Name}
+}
+
+func toStreamToolCalls(value *[]StreamToolCall) *[]types.StreamToolCall {
+	if value == nil {
+		return nil
+	}
+	converted := make([]types.StreamToolCall, len(*value))
+	for i, call := range *value {
+		converted[i] = types.StreamToolCall{
+			Index: call.Index, ID: call.ID, Function: toStreamFunctionCall(call.Function), Type: call.Type,
+		}
+	}
+	return &converted
 }
 
 func toFinishReason(value *FinishReason) *types.FinishReason {
