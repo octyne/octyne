@@ -120,7 +120,7 @@ func TestChatHandlerReturnsOpenAIErrorsAndRequestIDs(t *testing.T) {
 			)
 			recorder := httptest.NewRecorder()
 
-			server.mux.ServeHTTP(recorder, request)
+			server.httpServer.Handler.ServeHTTP(recorder, request)
 
 			if recorder.Code != tt.wantStatus {
 				t.Fatalf("status = %d, want %d", recorder.Code, tt.wantStatus)
@@ -170,7 +170,7 @@ func TestChatHandlerMapsUpstreamOpenAIError(t *testing.T) {
 		strings.NewReader(`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}]}`),
 	)
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusTooManyRequests {
 		t.Fatalf("status = %d, want 429", recorder.Code)
@@ -206,7 +206,7 @@ func TestChatHandlerStreamsOpenAIErrorEvent(t *testing.T) {
 		strings.NewReader(`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}],"stream":true}`),
 	)
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200", recorder.Code)

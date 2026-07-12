@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -19,32 +19,35 @@ type Server struct {
 	gateway       *gateway.Service
 	modelRegistry *registry.Registry
 	httpServer    *http.Server
+	logger        *slog.Logger
 }
 
-func New(addr string, gateway *gateway.Service, modelRegistry *registry.Registry) *Server {
+func New(addr string, logger *slog.Logger, gateway *gateway.Service, modelRegistry *registry.Registry) *Server {
 
 	s := &Server{
 		mux:           http.NewServeMux(),
 		gateway:       gateway,
 		modelRegistry: modelRegistry,
+		logger:        logger,
 	}
 
 	s.routes()
 
 	s.httpServer = &http.Server{
 		Addr:              addr,
-		Handler:           s.mux,
+		Handler:           withRequestID(s.withRequestLogging(s.mux)),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      0, // Long-lived SSE streams must not have a global write deadline.
 		IdleTimeout:       120 * time.Second,
+		ErrorLog:          slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
 	return s
 }
 
 func (s *Server) Start() error {
-	log.Printf("Octyne starting on %s", s.httpServer.Addr)
+	s.logger.Info("HTTP server starting", "address", s.httpServer.Addr)
 	return s.httpServer.ListenAndServe()
 }
 
@@ -63,7 +66,7 @@ func (s *Server) Run(ctx context.Context) error {
 		return fmt.Errorf("serve HTTP server: %w", err)
 
 	case <-ctx.Done():
-		log.Printf("Octyne shutting down")
+		s.logger.Info("HTTP server shutting down")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(

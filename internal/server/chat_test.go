@@ -52,7 +52,7 @@ func TestChatHandlerForwardsRoleSpecificMessages(t *testing.T) {
 
 	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"openai/gpt-5-nano","messages":`+messagesJSON+`}`))
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d: %s", recorder.Code, recorder.Body.String())
 	}
@@ -366,7 +366,7 @@ data: [DONE]
 	)
 
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf(
@@ -555,7 +555,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 	)
 
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf(
@@ -632,7 +632,7 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 		ModelID:  "gpt-5-nano",
 	})
 
-	return New(":0", gateway.New(providerRegistry, modelRegistry), modelRegistry)
+	return New(":0", newTestLogger(), gateway.New(providerRegistry, modelRegistry), modelRegistry)
 }
 
 func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
@@ -652,7 +652,7 @@ func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
 	)
 
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusBadRequest {
 		t.Errorf(

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"strings"
@@ -11,13 +12,13 @@ import (
 )
 
 func TestNewConfiguresHTTPServer(t *testing.T) {
-	server := New(":4321", nil, nil)
+	server := New(":4321", newTestLogger(), nil, nil)
 
 	if server.httpServer.Addr != ":4321" {
 		t.Errorf("Addr = %q, want %q", server.httpServer.Addr, ":4321")
 	}
-	if server.httpServer.Handler != server.mux {
-		t.Error("Handler does not use the server mux")
+	if server.httpServer.Handler == nil {
+		t.Error("Handler = nil, want configured middleware chain")
 	}
 
 	tests := []struct {
@@ -44,7 +45,7 @@ func TestRunReturnsServeError(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	err := New("invalid address", nil, nil).Run(ctx)
+	err := New("invalid address", newTestLogger(), nil, nil).Run(ctx)
 	if err == nil {
 		t.Fatal("Run error = nil, want listen error")
 	}
@@ -72,7 +73,7 @@ func TestRunDrainsActiveRequestOnCancellation(t *testing.T) {
 		}
 	}()
 
-	server := New(addr, nil, nil)
+	server := New(addr, newTestLogger(), nil, nil)
 	server.httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		close(requestStarted)
 		<-releaseRequest
@@ -137,4 +138,8 @@ func TestRunDrainsActiveRequestOnCancellation(t *testing.T) {
 	case <-time.After(2 * time.Second):
 		t.Fatal("Run did not return after active request completed")
 	}
+}
+
+func newTestLogger() *slog.Logger {
+	return slog.New(slog.DiscardHandler)
 }

@@ -21,11 +21,11 @@ func TestModelsHandlerReturnsRegisteredModels(t *testing.T) {
 		Provider: "openai",
 		ModelID:  "gpt-4.1-mini",
 	})
-	server := New(":0", nil, modelRegistry)
+	server := New(":0", newTestLogger(), nil, modelRegistry)
 
 	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
@@ -70,11 +70,11 @@ func TestModelsHandlerReturnsRegisteredModels(t *testing.T) {
 }
 
 func TestModelsHandlerReturnsEmptyList(t *testing.T) {
-	server := New(":0", nil, registry.NewRegistry())
+	server := New(":0", newTestLogger(), nil, registry.NewRegistry())
 
 	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
@@ -85,11 +85,11 @@ func TestModelsHandlerReturnsEmptyList(t *testing.T) {
 }
 
 func TestModelsHandlerRejectsWrongMethod(t *testing.T) {
-	server := New(":0", nil, registry.NewRegistry())
+	server := New(":0", newTestLogger(), nil, registry.NewRegistry())
 
 	request := httptest.NewRequest(http.MethodPost, "/v1/models", nil)
 	recorder := httptest.NewRecorder()
-	server.mux.ServeHTTP(recorder, request)
+	server.httpServer.Handler.ServeHTTP(recorder, request)
 
 	if recorder.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusMethodNotAllowed)
