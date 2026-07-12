@@ -58,7 +58,7 @@ func TestChatHandlerReturnsOpenAIErrorsAndRequestIDs(t *testing.T) {
 		},
 		{
 			name:       "trailing JSON value",
-			body:       `{"model":"gpt-5-nano","messages":[{"role":"user","content":"hello"}]} {}`,
+			body:       `{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}]} {}`,
 			wantStatus: http.StatusBadRequest,
 			wantType:   "invalid_request_error",
 			wantCode:   "invalid_json",
@@ -72,7 +72,7 @@ func TestChatHandlerReturnsOpenAIErrorsAndRequestIDs(t *testing.T) {
 		},
 		{
 			name:       "missing messages",
-			body:       `{"model":"gpt-5-nano"}`,
+			body:       `{"model":"openai/gpt-5-nano"}`,
 			wantStatus: http.StatusBadRequest,
 			wantType:   "invalid_request_error",
 			wantParam:  "messages",
@@ -80,6 +80,14 @@ func TestChatHandlerReturnsOpenAIErrorsAndRequestIDs(t *testing.T) {
 		{
 			name:       "unknown model",
 			body:       `{"model":"not-registered","messages":[{"role":"user","content":"hello"}]}`,
+			wantStatus: http.StatusNotFound,
+			wantType:   "invalid_request_error",
+			wantParam:  "model",
+			wantCode:   "model_not_found",
+		},
+		{
+			name:       "unqualified model",
+			body:       `{"model":"gpt-5-nano","messages":[{"role":"user","content":"hello"}]}`,
 			wantStatus: http.StatusNotFound,
 			wantType:   "invalid_request_error",
 			wantParam:  "model",
@@ -159,7 +167,7 @@ func TestChatHandlerMapsUpstreamOpenAIError(t *testing.T) {
 	request := httptest.NewRequest(
 		http.MethodPost,
 		"/v1/chat/completions",
-		strings.NewReader(`{"model":"gpt-5-nano","messages":[{"role":"user","content":"hello"}]}`),
+		strings.NewReader(`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}]}`),
 	)
 	recorder := httptest.NewRecorder()
 	server.mux.ServeHTTP(recorder, request)
@@ -195,7 +203,7 @@ func TestChatHandlerStreamsOpenAIErrorEvent(t *testing.T) {
 	request := httptest.NewRequest(
 		http.MethodPost,
 		"/v1/chat/completions",
-		strings.NewReader(`{"model":"gpt-5-nano","messages":[{"role":"user","content":"hello"}],"stream":true}`),
+		strings.NewReader(`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}],"stream":true}`),
 	)
 	recorder := httptest.NewRecorder()
 	server.mux.ServeHTTP(recorder, request)

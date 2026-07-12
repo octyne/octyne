@@ -32,20 +32,20 @@ func TestResolveRouteReturnsTypedRoutingErrors(t *testing.T) {
 		},
 		{
 			name:             "provider missing",
-			model:            "gpt-5-nano",
+			model:            "openai/gpt-5-nano",
 			providerRegistry: providers.NewRegistry(),
-			modelRegistry:    registryWithModel("gpt-5-nano", "openai", "gpt-5-nano"),
+			modelRegistry:    registryWithModel("openai/gpt-5-nano", "openai", "gpt-5-nano"),
 			wantKind:         types.ErrorKindInternal,
 			wantStatus:       http.StatusInternalServerError,
 		},
 		{
 			name:  "adapter missing",
-			model: "gpt-5-nano",
+			model: "openai/gpt-5-nano",
 			providerRegistry: registryWithProvider(providers.New(
 				providers.Config{Name: "openai"},
 				nil,
 			)),
-			modelRegistry: registryWithModel("gpt-5-nano", "openai", "gpt-5-nano"),
+			modelRegistry: registryWithModel("openai/gpt-5-nano", "openai", "gpt-5-nano"),
 			wantKind:      types.ErrorKindInternal,
 			wantStatus:    http.StatusInternalServerError,
 		},
@@ -78,9 +78,9 @@ func TestChatUsesResolvedUpstreamModelID(t *testing.T) {
 			providers.Config{Name: "openai"},
 			adapter,
 		)),
-		registryWithModel("fast", "openai", "gpt-5-nano"),
+		registryWithModel("openai/gpt-5-nano", "openai", "gpt-5-nano"),
 	)
-	request := types.ChatCompletionRequest{Model: "fast"}
+	request := types.ChatCompletionRequest{Model: "openai/gpt-5-nano"}
 
 	if _, err := service.Chat(context.Background(), request); err != nil {
 		t.Fatalf("Chat() error = %v", err)
@@ -89,8 +89,8 @@ func TestChatUsesResolvedUpstreamModelID(t *testing.T) {
 	if got := adapter.chatRequest.Model; got != "gpt-5-nano" {
 		t.Errorf("adapter request model = %q, want %q", got, "gpt-5-nano")
 	}
-	if request.Model != "fast" {
-		t.Errorf("caller request model = %q, want public alias %q", request.Model, "fast")
+	if request.Model != "openai/gpt-5-nano" {
+		t.Errorf("caller request model = %q, want public model %q", request.Model, "openai/gpt-5-nano")
 	}
 }
 
@@ -101,9 +101,9 @@ func TestStreamChatUsesResolvedUpstreamModelID(t *testing.T) {
 			providers.Config{Name: "openai"},
 			adapter,
 		)),
-		registryWithModel("fast", "openai", "gpt-5-nano"),
+		registryWithModel("openai/gpt-5-nano", "openai", "gpt-5-nano"),
 	)
-	request := types.ChatCompletionRequest{Model: "fast"}
+	request := types.ChatCompletionRequest{Model: "openai/gpt-5-nano"}
 
 	if _, err := service.StreamChat(context.Background(), request); err != nil {
 		t.Fatalf("StreamChat() error = %v", err)
@@ -112,8 +112,8 @@ func TestStreamChatUsesResolvedUpstreamModelID(t *testing.T) {
 	if got := adapter.streamRequest.Model; got != "gpt-5-nano" {
 		t.Errorf("adapter request model = %q, want %q", got, "gpt-5-nano")
 	}
-	if request.Model != "fast" {
-		t.Errorf("caller request model = %q, want public alias %q", request.Model, "fast")
+	if request.Model != "openai/gpt-5-nano" {
+		t.Errorf("caller request model = %q, want public model %q", request.Model, "openai/gpt-5-nano")
 	}
 }
 

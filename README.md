@@ -61,7 +61,7 @@ curl http://localhost:3000/health
 curl http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-5-nano",
+    "model": "openai/gpt-5-nano",
     "messages": [
       {
         "role": "user",
@@ -99,6 +99,9 @@ Example response shape:
 }
 ```
 
+The response `model` value is the upstream model identifier reported by the
+selected provider.
+
 ### Streaming
 
 Set `stream` to `true` to receive OpenAI-compatible server-sent events. A
@@ -108,7 +111,7 @@ successful stream ends with `data: [DONE]`.
 curl -N http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-5-nano",
+    "model": "openai/gpt-5-nano",
     "messages": [
       {
         "role": "user",
@@ -181,12 +184,12 @@ does not emit `[DONE]`.
 
 Currently registered models:
 
-- `gpt-5-nano`
-- `gpt-4.1-mini`
+- `openai/gpt-5-nano`
+- `openai/gpt-4.1-mini`
 
-Model registry entries resolve a public model name to a provider and upstream
-model ID. This allows future aliases to use stable public names while sending
-the provider-specific identifier upstream.
+Public model names use the required `provider/model` format. Registry entries
+resolve those names to a provider and its upstream model ID, so clients can
+select the provider explicitly while adapters receive provider-native IDs.
 
 ## Docker
 

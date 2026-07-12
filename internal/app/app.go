@@ -37,7 +37,7 @@ func New(appConfig config.Config) *App {
 	modelRegistry := registry.NewRegistry()
 
 	modelRegistry.Register(
-		"gpt-4.1-mini",
+		"openai/gpt-4.1-mini",
 		registry.Model{
 			Provider: "openai",
 			ModelID:  "gpt-4.1-mini",
@@ -45,7 +45,7 @@ func New(appConfig config.Config) *App {
 	)
 
 	modelRegistry.Register(
-		"gpt-5-nano",
+		"openai/gpt-5-nano",
 		registry.Model{
 			Provider: "openai",
 			ModelID:  "gpt-5-nano",
