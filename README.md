@@ -10,7 +10,8 @@ Today it exposes an OpenAI-compatible Chat Completions endpoint and routes reque
 - `GET /health`
 - Non-streaming OpenAI-compatible chat completions
 - Streaming OpenAI-compatible chat completions over SSE
-- Complete typed Chat Completions success responses and streaming chunks
+- Complete typed Chat Completions requests, success responses, and streaming chunks
+- OpenAI-compatible error envelopes and per-request `x-request-id` headers
 - OpenAI provider adapter
 - In-memory model registry
 - Provider abstraction layer
@@ -160,6 +161,21 @@ and the final usage-only chunk. A successful stream still ends with
 `data: [DONE]`. See the
 [Chat Completions schema status](docs/chat-completions-schema.md) for the full
 response inventory.
+
+## Error Compatibility and Request IDs
+
+Chat Completions errors use the OpenAI-compatible JSON envelope with `message`,
+`type`, nullable `param`, and nullable `code` fields. Validation, routing,
+provider status, rate-limit, timeout, and internal failures are mapped to safe
+HTTP statuses and public messages instead of exposing arbitrary Go or upstream
+server details.
+
+Every Chat Completions response includes an Octyne-generated `x-request-id`.
+Octyne also sends that value to the OpenAI provider as `X-Client-Request-Id` for
+cross-system correlation while retaining the provider's own request ID as
+internal diagnostic metadata. If a stream fails after its HTTP headers have
+already been sent, Octyne emits an error envelope as an SSE `data:` event and
+does not emit `[DONE]`.
 
 ## Supported Models
 

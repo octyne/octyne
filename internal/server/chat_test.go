@@ -560,6 +560,9 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 	if got := recorder.Header().Get("Content-Type"); got != "application/json" {
 		t.Errorf("Content-Type = %q, want application/json", got)
 	}
+	if got := recorder.Header().Get("x-request-id"); !strings.HasPrefix(got, "req_") {
+		t.Errorf("x-request-id = %q, want req_ prefix", got)
+	}
 
 	var response types.ChatCompletionResponse
 	if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
@@ -644,11 +647,13 @@ func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
 		)
 	}
 
-	if got := recorder.Body.String(); got != "messages are required\n" {
-		t.Errorf(
-			"body = %q, want %q",
-			got,
-			"messages are required\n",
-		)
+	var envelope openAIErrorEnvelope
+	if err := json.NewDecoder(recorder.Body).Decode(&envelope); err != nil {
+		t.Fatalf("decode error response: %v", err)
+	}
+	if envelope.Error.Type != "invalid_request_error" ||
+		envelope.Error.Param == nil ||
+		*envelope.Error.Param != "messages" {
+		t.Errorf("error = %+v, want messages validation error", envelope.Error)
 	}
 }

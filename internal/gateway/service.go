@@ -2,7 +2,7 @@ package gateway
 
 import (
 	"context"
-	"errors"
+	"net/http"
 
 	"github.com/octyne/octyne/internal/adapters"
 	"github.com/octyne/octyne/internal/providers"
@@ -23,16 +23,32 @@ func New(providers *providers.Registry) *Service {
 func (s *Service) resolveAdapter(modelName string) (adapters.Adapter, error) {
 	model, ok := registry.Get(modelName)
 	if !ok {
-		return nil, errors.New("unknown model")
+		param := "model"
+		code := "model_not_found"
+		return nil, &types.APIError{
+			Kind:       types.ErrorKindNotFound,
+			Message:    "The requested model does not exist.",
+			Param:      &param,
+			Code:       &code,
+			HTTPStatus: http.StatusNotFound,
+		}
 	}
 
 	provider, ok := s.providers.Get(model.Provider)
 	if !ok {
-		return nil, errors.New("provider not found")
+		return nil, &types.APIError{
+			Kind:       types.ErrorKindInternal,
+			Message:    "The model provider is not available.",
+			HTTPStatus: http.StatusInternalServerError,
+		}
 	}
 
 	if provider.Adapter == nil {
-		return nil, errors.New("provider adapter not configured")
+		return nil, &types.APIError{
+			Kind:       types.ErrorKindInternal,
+			Message:    "The model provider is not configured.",
+			HTTPStatus: http.StatusInternalServerError,
+		}
 	}
 
 	return provider.Adapter, nil

@@ -63,14 +63,14 @@ Automated tests cover typed non-streaming response translation, assistant output
 
 The OpenAI-compatible Chat Completions request now covers all 37 current top-level parameters, including typed role-specific and multimodal messages, tools and tool choices, structured output, prediction, streaming options, prompt caching, provider-assisted features, and accepted deprecated fields. The compatibility, canonical, and OpenAI provider layers remain distinct, and optional scalar values preserve explicit zero, false, and empty values.
 
-The current documented non-streaming response and streaming chunk schemas are typed through the OpenAI provider and canonical layers. The next implementation priority is compatibility-layer error handling and request IDs.
+The current documented non-streaming response and streaming chunk schemas are typed through the OpenAI provider and canonical layers. Chat Completions errors use OpenAI-compatible envelopes and status mapping, every response receives an Octyne request ID, and the same ID is forwarded to OpenAI for correlation without replacing the provider's own diagnostic request ID. Upstream server details are sanitized, and failures after streaming headers are committed are returned as SSE error events without a successful `[DONE]` terminator.
 
 ## Near-Term Priorities
 
-1. Improve canonical error handling and OpenAI-compatible error responses.
-2. Add request IDs and safe provider error metadata.
-3. Add focused tests for remaining routing and configuration paths.
-4. Move the model registry toward configurable registration before it becomes permanent hardcoding.
+1. Move the model registry toward configurable registration before it becomes permanent hardcoding.
+2. Add explicit server timeouts, graceful shutdown, and structured logging.
+3. Add Octyne API authentication separate from provider credentials.
+4. Begin reusable OpenAI-compatible provider configuration.
 
 ## Beta Scope
 

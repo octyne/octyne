@@ -16,8 +16,8 @@ The initial non-streaming and streaming vertical slice is complete.
 - [x] Complete all current top-level Chat Completions request parameters and their typed nested request shapes.
 - [x] Complete typed non-streaming response messages, finish reasons, log probabilities, usage, moderation, and service metadata.
 - [x] Complete typed streaming deltas, tool-call fragments, multiple choices, metadata, obfuscation, and usage-only chunks.
-- [ ] Add request IDs and canonical OpenAI-compatible errors.
-- [ ] Expand focused tests for remaining translation, routing, and configuration paths.
+- [x] Add request IDs and canonical OpenAI-compatible errors.
+- [x] Add field-inventory and focused validation, routing, provider-error, request-ID, and mid-stream error tests.
 
 ## Milestone 2: OpenAI-Compatible Providers
 

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
 	"github.com/octyne/octyne/internal/types"
@@ -43,6 +44,26 @@ func readChatCompletionStream(
 			}
 
 			if data == "[DONE]" {
+				return
+			}
+
+			var errorEnvelope upstreamErrorEnvelope
+			if err := json.Unmarshal([]byte(data), &errorEnvelope); err == nil &&
+				errorEnvelope.Error != nil {
+				message := "The upstream provider failed while streaming."
+				if errorEnvelope.Error.Message != "" {
+					message = errorEnvelope.Error.Message
+				}
+				select {
+				case chunks <- types.StreamChunk{Error: &types.APIError{
+					Kind:       types.ErrorKindInternal,
+					Message:    message,
+					Param:      errorEnvelope.Error.Param,
+					Code:       errorEnvelope.Error.Code,
+					HTTPStatus: http.StatusBadGateway,
+				}}:
+				case <-ctx.Done():
+				}
 				return
 			}
 
