@@ -6,18 +6,18 @@ type StreamDelta struct {
 }
 
 type StreamChoice struct {
-	Index        int         `json:"index"`
-	Delta        StreamDelta `json:"delta"`
-	FinishReason *string     `json:"finish_reason"`
-	Logprobs     any         `json:"logprobs"`
+	Index        int           `json:"index"`
+	Delta        StreamDelta   `json:"delta"`
+	FinishReason *FinishReason `json:"finish_reason"`
+	Logprobs     *ChatLogprobs `json:"logprobs"`
 }
 
 type StreamChunk struct {
-	ID      string         `json:"id"`
-	Object  string         `json:"object"`
-	Created int64          `json:"created"`
-	Model   string         `json:"model"`
-	Choices []StreamChoice `json:"choices"`
-	Usage   any            `json:"usage,omitempty"`
-	Error   error          `json:"-"`
+	ID      string           `json:"id"`
+	Object  string           `json:"object"`
+	Created int64            `json:"created"`
+	Model   string           `json:"model"`
+	Choices []StreamChoice   `json:"choices"`
+	Usage   *CompletionUsage `json:"usage,omitempty"`
+	Error   error            `json:"-"`
 }
