@@ -127,6 +127,23 @@ data: [DONE]
 
 Streaming implementations must read incrementally, respect cancellation, avoid loading full streams into memory, close response bodies, close output channels exactly once, distinguish setup errors from in-stream errors, and flush each event to the client.
 
+## Errors and Request IDs
+
+Errors cross the gateway and adapter layers as provider-neutral typed errors.
+The compatibility server maps those errors to the requested API's envelope and
+HTTP status. The OpenAI-compatible edge returns `error.message`, `error.type`,
+nullable `error.param`, and nullable `error.code`; it never returns arbitrary Go
+error strings or unparsed upstream response bodies.
+
+Each Chat Completions request receives an Octyne-generated request ID in
+context and in the client-facing `x-request-id` response header. The OpenAI
+adapter forwards it as `X-Client-Request-Id`. Provider request IDs remain
+separate diagnostic metadata so an upstream identifier cannot replace the
+gateway's trace identity. Provider error bodies are read with a fixed bound,
+structured 4xx details may be returned to clients, and 5xx details are
+sanitized. Once SSE headers are committed, an error is represented as an SSE
+`data:` event and the stream ends without `[DONE]`.
+
 ## Operational Direction
 
-Move toward explicit `http.Server` timeouts, graceful shutdown, structured logging with `log/slog`, request IDs, bounded provider error body reads, and compatibility-layer error responses. Avoid exposing arbitrary internal Go error strings as the public API contract.
+Move toward explicit `http.Server` timeouts, graceful shutdown, and structured logging with `log/slog`. Request IDs, bounded provider error body reads, and compatibility-layer error responses are implemented for Chat Completions. Avoid exposing arbitrary internal Go error strings as the public API contract.
