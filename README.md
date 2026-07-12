@@ -8,12 +8,14 @@ Today it exposes an OpenAI-compatible Chat Completions endpoint and routes reque
 
 - `POST /v1/chat/completions`
 - `GET /health`
+- Non-streaming OpenAI-compatible chat completions
+- Streaming OpenAI-compatible chat completions over SSE
 - OpenAI provider adapter
 - In-memory model registry
 - Provider abstraction layer
 - Docker and Compose local runtime
 
-Streaming and additional providers are planned, but not enabled yet.
+Additional providers are planned, but not enabled yet.
 
 ## Requirements
 
@@ -49,7 +51,9 @@ Health check:
 curl http://localhost:3000/health
 ```
 
-## Chat Example
+## Chat Examples
+
+### Non-streaming
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -81,6 +85,53 @@ Example response shape:
   ]
 }
 ```
+
+### Streaming
+
+Set `stream` to `true` to receive OpenAI-compatible server-sent events. A
+successful stream ends with `data: [DONE]`.
+
+```bash
+curl -N http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5-nano",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello"
+      }
+    ],
+    "stream": true
+  }'
+```
+
+## Request Parameter Compatibility
+
+The OpenAI-compatible request boundary supports the current Chat Completions
+request schema, including multimodal messages, tools, structured output, and
+accepted deprecated fields. Optional scalar parameters preserve explicit zero,
+`false`, and empty values while requests move through the compatibility,
+canonical, and provider layers. See the
+[Chat Completions schema status](docs/chat-completions-schema.md) for the full
+parameter list and nested-shape coverage.
+
+Deprecated OpenAI parameters remain accepted for compatibility:
+
+- `max_tokens` (prefer `max_completion_tokens`)
+- `user` (prefer `safety_identifier` and/or `prompt_cache_key`, depending on the
+  use case)
+- `prompt_cache_retention` (prefer `prompt_cache_options.ttl`)
+- `functions` (prefer `tools`)
+- `function_call` (prefer `tool_choice`)
+
+For the OpenAI provider, Octyne currently preserves and forwards these fields.
+New clients should use the replacement fields. Future provider adapters will
+translate a deprecated field only when that provider has a safe equivalent;
+otherwise Octyne should return a clear compatibility error rather than silently
+changing or dropping the request. Provider-native compatibility APIs should
+expose that API's own parameter names and deprecation rules instead of inheriting
+OpenAI-only legacy fields.
 
 ## Supported Models
 
@@ -116,5 +167,6 @@ Useful package boundaries:
 
 - [Project context](docs/project-context.md)
 - [Architecture](docs/architecture.md)
+- [Chat Completions schema status](docs/chat-completions-schema.md)
 - [Roadmap](docs/roadmap.md)
 - [Decisions](docs/decisions/)
