@@ -252,12 +252,15 @@ type Choice struct {
 }
 
 type ChatCompletionResponse struct {
-	ID      string           `json:"id"`
-	Object  string           `json:"object"`
-	Created int64            `json:"created"`
-	Model   string           `json:"model"`
-	Choices []Choice         `json:"choices"`
-	Usage   *CompletionUsage `json:"usage,omitempty"`
+	ID                string                    `json:"id"`
+	Object            string                    `json:"object"`
+	Created           int64                     `json:"created"`
+	Model             string                    `json:"model"`
+	Choices           []Choice                  `json:"choices"`
+	Moderation        *ChatCompletionModeration `json:"moderation,omitempty"`
+	ServiceTier       *ServiceTier              `json:"service_tier,omitempty"`
+	SystemFingerprint *string                   `json:"system_fingerprint,omitempty"`
+	Usage             *CompletionUsage          `json:"usage,omitempty"`
 }
 
 type Delta struct {

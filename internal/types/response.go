@@ -1,5 +1,10 @@
 package types
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type FinishReason string
 
 const (
@@ -93,4 +98,74 @@ type CompletionUsage struct {
 	TotalTokens             int                      `json:"total_tokens"`
 	CompletionTokensDetails *CompletionTokensDetails `json:"completion_tokens_details,omitempty"`
 	PromptTokensDetails     *PromptTokensDetails     `json:"prompt_tokens_details,omitempty"`
+}
+
+type ModerationResult struct {
+	Categories                map[string]bool     `json:"categories"`
+	CategoryAppliedInputTypes map[string][]string `json:"category_applied_input_types"`
+	CategoryScores            map[string]float64  `json:"category_scores"`
+	Flagged                   bool                `json:"flagged"`
+	Model                     string              `json:"model"`
+	Type                      string              `json:"type"`
+}
+
+type ModerationResults struct {
+	Model   string             `json:"model"`
+	Results []ModerationResult `json:"results"`
+	Type    string             `json:"type"`
+}
+
+type ModerationError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Type    string `json:"type"`
+}
+
+type ModerationOutcome struct {
+	Results *ModerationResults
+	Error   *ModerationError
+}
+
+func (o ModerationOutcome) MarshalJSON() ([]byte, error) {
+	if o.Results != nil {
+		return json.Marshal(o.Results)
+	}
+	if o.Error != nil {
+		return json.Marshal(o.Error)
+	}
+	return []byte("null"), nil
+}
+
+func (o *ModerationOutcome) UnmarshalJSON(data []byte) error {
+	var discriminator struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &discriminator); err != nil {
+		return err
+	}
+	switch discriminator.Type {
+	case "moderation_results":
+		var value ModerationResults
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		o.Results = &value
+		o.Error = nil
+		return nil
+	case "error":
+		var value ModerationError
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		o.Error = &value
+		o.Results = nil
+		return nil
+	default:
+		return fmt.Errorf("unsupported moderation outcome type %q", discriminator.Type)
+	}
+}
+
+type ChatCompletionModeration struct {
+	Input  ModerationOutcome `json:"input"`
+	Output ModerationOutcome `json:"output"`
 }
