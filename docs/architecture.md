@@ -61,6 +61,11 @@ differ from the public name.
 
 Main should remain small. The server should not construct the gateway, the gateway should not construct registries, and adapters should not read environment variables.
 
+The server receives the application-owned model registry as a separate
+dependency for `GET /v1/models`. That read-only endpoint lists public model IDs
+directly from the registry instead of routing through the chat gateway. This
+keeps discovery and chat routing backed by the same source of truth.
+
 ## Schema Layers
 
 Octyne must distinguish three schema layers:

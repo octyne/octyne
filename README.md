@@ -2,11 +2,12 @@
 
 Octyne is a lightweight AI gateway written in Go.
 
-Today it exposes an OpenAI-compatible Chat Completions endpoint and routes requests through the configured OpenAI provider. The project is designed to grow into a broader AI infrastructure platform for routing, credentials, usage tracking, observability, governance, and multiple provider APIs.
+Today it exposes OpenAI-compatible Chat Completions and model-list endpoints and routes requests through the configured OpenAI provider. The project is designed to grow into a broader AI infrastructure platform for routing, credentials, usage tracking, observability, governance, and multiple provider APIs.
 
 ## Current Support
 
 - `POST /v1/chat/completions`
+- `GET /v1/models`
 - `GET /health`
 - Non-streaming OpenAI-compatible chat completions
 - Streaming OpenAI-compatible chat completions over SSE
@@ -182,7 +183,36 @@ does not emit `[DONE]`.
 
 ## Supported Models
 
-Currently registered models:
+List the currently registered public models:
+
+```bash
+curl http://localhost:3000/v1/models
+```
+
+Example response:
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "openai/gpt-4.1-mini",
+      "object": "model",
+      "created": 0,
+      "owned_by": "openai"
+    },
+    {
+      "id": "openai/gpt-5-nano",
+      "object": "model",
+      "created": 0,
+      "owned_by": "openai"
+    }
+  ]
+}
+```
+
+The `created` value is `0` until registry entries carry authoritative creation
+timestamps. Currently registered models are:
 
 - `openai/gpt-5-nano`
 - `openai/gpt-4.1-mini`

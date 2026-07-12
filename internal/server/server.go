@@ -5,18 +5,21 @@ import (
 	"net/http"
 
 	"github.com/octyne/octyne/internal/gateway"
+	"github.com/octyne/octyne/internal/registry"
 )
 
 type Server struct {
-	mux     *http.ServeMux
-	gateway *gateway.Service
+	mux           *http.ServeMux
+	gateway       *gateway.Service
+	modelRegistry *registry.Registry
 }
 
-func New(gateway *gateway.Service) *Server {
+func New(gateway *gateway.Service, modelRegistry *registry.Registry) *Server {
 
 	s := &Server{
-		mux:     http.NewServeMux(),
-		gateway: gateway,
+		mux:           http.NewServeMux(),
+		gateway:       gateway,
+		modelRegistry: modelRegistry,
 	}
 
 	s.routes()
