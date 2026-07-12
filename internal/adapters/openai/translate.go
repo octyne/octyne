@@ -241,11 +241,8 @@ func toChatCompletionResponse(
 
 	for _, choice := range resp.Choices {
 		choices = append(choices, types.Choice{
-			Index: choice.Index,
-			Message: types.Message{
-				Role:    choice.Message.Role,
-				Content: choice.Message.Content,
-			},
+			Index:        choice.Index,
+			Message:      toResponseMessage(choice.Message),
 			FinishReason: toFinishReason(choice.FinishReason),
 			Logprobs:     toChatLogprobs(choice.Logprobs),
 		})
@@ -259,6 +256,69 @@ func toChatCompletionResponse(
 		Choices: choices,
 		Usage:   toCompletionUsage(resp.Usage),
 	}
+}
+
+func toResponseMessage(value ResponseMessage) types.ResponseMessage {
+	return types.ResponseMessage{
+		Role:         value.Role,
+		Content:      value.Content,
+		Refusal:      value.Refusal,
+		Annotations:  toResponseAnnotations(value.Annotations),
+		Audio:        toResponseAudio(value.Audio),
+		FunctionCall: toResponseFunctionCall(value.FunctionCall),
+		ToolCalls:    toResponseToolCalls(value.ToolCalls),
+	}
+}
+
+func toResponseAnnotations(value *[]Annotation) *[]types.Annotation {
+	if value == nil {
+		return nil
+	}
+	converted := make([]types.Annotation, len(*value))
+	for i, annotation := range *value {
+		converted[i] = types.Annotation{
+			Type: annotation.Type,
+			URLCitation: types.URLCitation{
+				EndIndex: annotation.URLCitation.EndIndex, StartIndex: annotation.URLCitation.StartIndex,
+				Title: annotation.URLCitation.Title, URL: annotation.URLCitation.URL,
+			},
+		}
+	}
+	return &converted
+}
+
+func toResponseAudio(value *ChatCompletionAudio) *types.ChatCompletionAudio {
+	if value == nil {
+		return nil
+	}
+	return &types.ChatCompletionAudio{
+		ID: value.ID, Data: value.Data, ExpiresAt: value.ExpiresAt, Transcript: value.Transcript,
+	}
+}
+
+func toResponseFunctionCall(value *MessageFunctionCall) *types.ResponseFunctionCall {
+	if value == nil {
+		return nil
+	}
+	return &types.ResponseFunctionCall{Arguments: value.Arguments, Name: value.Name}
+}
+
+func toResponseToolCalls(value *[]MessageToolCall) *[]types.ResponseToolCall {
+	if value == nil {
+		return nil
+	}
+	converted := make([]types.ResponseToolCall, len(*value))
+	for i, call := range *value {
+		converted[i] = types.ResponseToolCall{
+			ID: call.ID, Type: call.Type, Function: toResponseFunctionCall(call.Function),
+		}
+		if call.Custom != nil {
+			converted[i].Custom = &types.ResponseCustomCall{
+				Input: call.Custom.Input, Name: call.Custom.Name,
+			}
+		}
+	}
+	return &converted
 }
 
 func toStreamChunk(

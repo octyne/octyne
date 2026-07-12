@@ -2,11 +2,6 @@ package types
 
 import "encoding/json"
 
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 type StopSequences []string
 
 type LogitBias map[string]float64
@@ -168,10 +163,10 @@ type ChatCompletionRequest struct {
 }
 
 type Choice struct {
-	Index        int           `json:"index"`
-	Message      Message       `json:"message"`
-	FinishReason *FinishReason `json:"finish_reason"`
-	Logprobs     *ChatLogprobs `json:"logprobs"`
+	Index        int             `json:"index"`
+	Message      ResponseMessage `json:"message"`
+	FinishReason *FinishReason   `json:"finish_reason"`
+	Logprobs     *ChatLogprobs   `json:"logprobs"`
 }
 
 type ChatCompletionResponse struct {
