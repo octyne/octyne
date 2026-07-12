@@ -27,8 +27,8 @@ The system is OpenAI-compatible first, but it must not become permanently OpenAI
 - `internal/app`: composition root. Construct the dependency graph: provider configs, adapters, registries, gateway, and server.
 - `internal/config`: load and validate environment configuration once during startup.
 - `internal/server`: own routes, HTTP decoding, basic validation, compatibility response formatting, and status codes.
-- `internal/gateway`: orchestrate chat requests, resolve models and providers, and delegate to adapters.
-- `internal/registry`: map public model names to provider metadata.
+- `internal/gateway`: orchestrate chat requests, resolve public models to provider adapters and upstream model IDs, and delegate to adapters.
+- `internal/registry`: map public model names to provider names and upstream model IDs.
 - `internal/providers`: define configured upstream providers and the provider registry.
 - `internal/adapters`: define adapter contracts.
 - `internal/adapters/<provider>`: translate canonical requests to provider requests, call provider HTTP APIs, and translate responses back.
@@ -41,10 +41,22 @@ Dependencies should be constructed explicitly in `internal/app`. Avoid package-l
 Preferred shape:
 
 ```go
+modelRegistry := registry.NewRegistry()
 providerRegistry := providers.NewRegistry()
-gatewayService := gateway.New(providerRegistry)
+
+gatewayService := gateway.New(
+    providerRegistry,
+    modelRegistry,
+)
+
 httpServer := server.New(gatewayService)
 ```
+
+Model and provider registrations happen during application construction. The
+gateway receives both registries as dependencies and does not read package-level
+model state. A model registry entry contains the provider name and upstream
+model ID, allowing a public model name or alias to differ from the identifier
+sent to the provider.
 
 Main should remain small. The server should not construct the gateway, the gateway should not construct registries, and adapters should not read environment variables.
 
