@@ -15,6 +15,11 @@ type Service struct {
 	models    *registry.Registry
 }
 
+type route struct {
+	adapter adapters.Adapter
+	modelID string
+}
+
 func New(providers *providers.Registry, models *registry.Registry) *Service {
 	return &Service{
 		providers: providers,
@@ -22,12 +27,12 @@ func New(providers *providers.Registry, models *registry.Registry) *Service {
 	}
 }
 
-func (s *Service) resolveAdapter(modelName string) (adapters.Adapter, error) {
+func (s *Service) resolveRoute(modelName string) (route, error) {
 	model, ok := s.models.Get(modelName)
 	if !ok {
 		param := "model"
 		code := "model_not_found"
-		return nil, &types.APIError{
+		return route{}, &types.APIError{
 			Kind:       types.ErrorKindNotFound,
 			Message:    "The requested model does not exist.",
 			Param:      &param,
@@ -38,7 +43,7 @@ func (s *Service) resolveAdapter(modelName string) (adapters.Adapter, error) {
 
 	provider, ok := s.providers.Get(model.Provider)
 	if !ok {
-		return nil, &types.APIError{
+		return route{}, &types.APIError{
 			Kind:       types.ErrorKindInternal,
 			Message:    "The model provider is not available.",
 			HTTPStatus: http.StatusInternalServerError,
@@ -46,14 +51,17 @@ func (s *Service) resolveAdapter(modelName string) (adapters.Adapter, error) {
 	}
 
 	if provider.Adapter == nil {
-		return nil, &types.APIError{
+		return route{}, &types.APIError{
 			Kind:       types.ErrorKindInternal,
 			Message:    "The model provider is not configured.",
 			HTTPStatus: http.StatusInternalServerError,
 		}
 	}
 
-	return provider.Adapter, nil
+	return route{
+		adapter: provider.Adapter,
+		modelID: model.ModelID,
+	}, nil
 }
 
 func (s *Service) Chat(
@@ -61,12 +69,14 @@ func (s *Service) Chat(
 	req types.ChatCompletionRequest,
 ) (*types.ChatCompletionResponse, error) {
 
-	adapter, err := s.resolveAdapter(req.Model)
+	resolved, err := s.resolveRoute(req.Model)
 	if err != nil {
 		return nil, err
 	}
 
-	return adapter.Chat(
+	req.Model = resolved.modelID
+
+	return resolved.adapter.Chat(
 		ctx,
 		req,
 	)
@@ -77,12 +87,14 @@ func (s *Service) StreamChat(
 	req types.ChatCompletionRequest,
 ) (<-chan types.StreamChunk, error) {
 
-	adapter, err := s.resolveAdapter(req.Model)
+	resolved, err := s.resolveRoute(req.Model)
 	if err != nil {
 		return nil, err
 	}
 
-	return adapter.StreamChat(
+	req.Model = resolved.modelID
+
+	return resolved.adapter.StreamChat(
 		ctx,
 		req,
 	)

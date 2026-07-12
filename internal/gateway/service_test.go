@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -10,7 +11,7 @@ import (
 	"github.com/octyne/octyne/internal/types"
 )
 
-func TestResolveAdapterReturnsTypedRoutingErrors(t *testing.T) {
+func TestResolveRouteReturnsTypedRoutingErrors(t *testing.T) {
 	tests := []struct {
 		name             string
 		model            string
@@ -33,7 +34,7 @@ func TestResolveAdapterReturnsTypedRoutingErrors(t *testing.T) {
 			name:             "provider missing",
 			model:            "gpt-5-nano",
 			providerRegistry: providers.NewRegistry(),
-			modelRegistry:    registryWithModel("gpt-5-nano", "openai"),
+			modelRegistry:    registryWithModel("gpt-5-nano", "openai", "gpt-5-nano"),
 			wantKind:         types.ErrorKindInternal,
 			wantStatus:       http.StatusInternalServerError,
 		},
@@ -44,7 +45,7 @@ func TestResolveAdapterReturnsTypedRoutingErrors(t *testing.T) {
 				providers.Config{Name: "openai"},
 				nil,
 			)),
-			modelRegistry: registryWithModel("gpt-5-nano", "openai"),
+			modelRegistry: registryWithModel("gpt-5-nano", "openai", "gpt-5-nano"),
 			wantKind:      types.ErrorKindInternal,
 			wantStatus:    http.StatusInternalServerError,
 		},
@@ -55,7 +56,7 @@ func TestResolveAdapterReturnsTypedRoutingErrors(t *testing.T) {
 			_, err := New(
 				tt.providerRegistry,
 				tt.modelRegistry,
-			).resolveAdapter(tt.model)
+			).resolveRoute(tt.model)
 			var apiErr *types.APIError
 			if !errors.As(err, &apiErr) {
 				t.Fatalf("error = %T, want *types.APIError", err)
@@ -70,11 +71,80 @@ func TestResolveAdapterReturnsTypedRoutingErrors(t *testing.T) {
 	}
 }
 
-func registryWithModel(name string, provider string) *registry.Registry {
+func TestChatUsesResolvedUpstreamModelID(t *testing.T) {
+	adapter := &recordingAdapter{}
+	service := New(
+		registryWithProvider(providers.New(
+			providers.Config{Name: "openai"},
+			adapter,
+		)),
+		registryWithModel("fast", "openai", "gpt-5-nano"),
+	)
+	request := types.ChatCompletionRequest{Model: "fast"}
+
+	if _, err := service.Chat(context.Background(), request); err != nil {
+		t.Fatalf("Chat() error = %v", err)
+	}
+
+	if got := adapter.chatRequest.Model; got != "gpt-5-nano" {
+		t.Errorf("adapter request model = %q, want %q", got, "gpt-5-nano")
+	}
+	if request.Model != "fast" {
+		t.Errorf("caller request model = %q, want public alias %q", request.Model, "fast")
+	}
+}
+
+func TestStreamChatUsesResolvedUpstreamModelID(t *testing.T) {
+	adapter := &recordingAdapter{}
+	service := New(
+		registryWithProvider(providers.New(
+			providers.Config{Name: "openai"},
+			adapter,
+		)),
+		registryWithModel("fast", "openai", "gpt-5-nano"),
+	)
+	request := types.ChatCompletionRequest{Model: "fast"}
+
+	if _, err := service.StreamChat(context.Background(), request); err != nil {
+		t.Fatalf("StreamChat() error = %v", err)
+	}
+
+	if got := adapter.streamRequest.Model; got != "gpt-5-nano" {
+		t.Errorf("adapter request model = %q, want %q", got, "gpt-5-nano")
+	}
+	if request.Model != "fast" {
+		t.Errorf("caller request model = %q, want public alias %q", request.Model, "fast")
+	}
+}
+
+type recordingAdapter struct {
+	chatRequest   types.ChatCompletionRequest
+	streamRequest types.ChatCompletionRequest
+}
+
+func (a *recordingAdapter) Chat(
+	_ context.Context,
+	req types.ChatCompletionRequest,
+) (*types.ChatCompletionResponse, error) {
+	a.chatRequest = req
+	return &types.ChatCompletionResponse{}, nil
+}
+
+func (a *recordingAdapter) StreamChat(
+	_ context.Context,
+	req types.ChatCompletionRequest,
+) (<-chan types.StreamChunk, error) {
+	a.streamRequest = req
+	chunks := make(chan types.StreamChunk)
+	close(chunks)
+	return chunks, nil
+}
+
+func registryWithModel(name string, provider string, modelID string) *registry.Registry {
 	modelRegistry := registry.NewRegistry()
 	modelRegistry.Register(name, registry.Model{
 		Provider: provider,
-		ModelID:  name,
+		ModelID:  modelID,
 	})
 	return modelRegistry
 }
