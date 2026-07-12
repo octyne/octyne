@@ -65,13 +65,13 @@ Expose Gemini models through the OpenAI-compatible API first.
 
 ## Milestone 5: Authentication and BYOK
 
-- Octyne API keys.
-- Hashed key storage.
-- Request authentication middleware.
-- Provider credential selection.
-- BYOK header or stored credential flow.
-- Secret encryption.
-- Credential resolver design.
+- [x] Configuration-backed Octyne API keys.
+- [ ] Persistent hashed key storage.
+- [x] Request authentication middleware for `/v1/*` with public health checks.
+- [ ] Provider credential selection.
+- [ ] BYOK header or stored credential flow.
+- [ ] Secret encryption.
+- [ ] Credential resolver design.
 
 Octyne API keys authenticate clients to Octyne. Provider credentials authenticate Octyne to upstream providers. Keep these concerns separate.
 

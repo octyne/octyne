@@ -51,6 +51,7 @@ func TestChatHandlerForwardsRoleSpecificMessages(t *testing.T) {
 	}))
 
 	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"openai/gpt-5-nano","messages":`+messagesJSON+`}`))
+	authenticateRequest(request)
 	recorder := httptest.NewRecorder()
 	server.httpServer.Handler.ServeHTTP(recorder, request)
 	if recorder.Code != http.StatusOK {
@@ -364,6 +365,7 @@ data: [DONE]
 			`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}},"response_format":{"type":"json_schema","json_schema":{"name":"answer","schema":{},"strict":false}},"prediction":{"type":"content","content":[{"type":"text","text":"","prompt_cache_breakpoint":{"mode":"explicit"}}]},"moderation":{"model":"omni-moderation-latest","policy":{"input":{"mode":"block"}}},"web_search_options":{"search_context_size":"high","user_location":{"type":"approximate","approximate":{"country":"US"}}},"tools":[{"type":"function","function":{"name":"weather","parameters":{},"strict":false}}],"tool_choice":{"type":"function","function":{"name":"weather"}},"functions":[{"name":"legacy","parameters":{}}],"function_call":{"name":"legacy"}}`,
 		),
 	)
+	authenticateRequest(request)
 
 	recorder := httptest.NewRecorder()
 	server.httpServer.Handler.ServeHTTP(recorder, request)
@@ -553,6 +555,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 			`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0,"logprobs":false,"verbosity":"medium"}`,
 		),
 	)
+	authenticateRequest(request)
 
 	recorder := httptest.NewRecorder()
 	server.httpServer.Handler.ServeHTTP(recorder, request)
@@ -613,6 +616,7 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 	config := providers.Config{
 		Name:                           "openai",
 		BaseURL:                        upstream.URL,
+		APIKey:                         "test-provider-api-key",
 		NonStreamingTimeout:            time.Second,
 		StreamingResponseHeaderTimeout: time.Second,
 	}
@@ -632,7 +636,13 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 		ModelID:  "gpt-5-nano",
 	})
 
-	return New(":0", newTestLogger(), gateway.New(providerRegistry, modelRegistry), modelRegistry)
+	return New(
+		":0",
+		newTestLogger(),
+		gateway.New(providerRegistry, modelRegistry),
+		modelRegistry,
+		newTestVerifier(),
+	)
 }
 
 func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
@@ -650,6 +660,7 @@ func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
 			`{"model":"openai/gpt-5-nano","messages":[]}`,
 		),
 	)
+	authenticateRequest(request)
 
 	recorder := httptest.NewRecorder()
 	server.httpServer.Handler.ServeHTTP(recorder, request)

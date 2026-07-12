@@ -9,10 +9,14 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/octyne/octyne/internal/auth"
 )
 
+const testClientAPIKey = "test-client-api-key-with-at-least-32-characters"
+
 func TestNewConfiguresHTTPServer(t *testing.T) {
-	server := New(":4321", newTestLogger(), nil, nil)
+	server := New(":4321", newTestLogger(), nil, nil, newTestVerifier())
 
 	if server.httpServer.Addr != ":4321" {
 		t.Errorf("Addr = %q, want %q", server.httpServer.Addr, ":4321")
@@ -45,7 +49,7 @@ func TestRunReturnsServeError(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	err := New("invalid address", newTestLogger(), nil, nil).Run(ctx)
+	err := New("invalid address", newTestLogger(), nil, nil, newTestVerifier()).Run(ctx)
 	if err == nil {
 		t.Fatal("Run error = nil, want listen error")
 	}
@@ -73,7 +77,7 @@ func TestRunDrainsActiveRequestOnCancellation(t *testing.T) {
 		}
 	}()
 
-	server := New(addr, newTestLogger(), nil, nil)
+	server := New(addr, newTestLogger(), nil, nil, newTestVerifier())
 	server.httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		close(requestStarted)
 		<-releaseRequest
@@ -142,4 +146,12 @@ func TestRunDrainsActiveRequestOnCancellation(t *testing.T) {
 
 func newTestLogger() *slog.Logger {
 	return slog.New(slog.DiscardHandler)
+}
+
+func newTestVerifier() auth.Verifier {
+	return auth.NewStaticKeyVerifier([]string{testClientAPIKey})
+}
+
+func authenticateRequest(request *http.Request) {
+	request.Header.Set("Authorization", "Bearer "+testClientAPIKey)
 }

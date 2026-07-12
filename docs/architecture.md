@@ -9,6 +9,8 @@ Current request flow:
 ```text
 Client
 -> Octyne HTTP server
+-> request ID and request logging
+-> Octyne client authentication for /v1/*
 -> compatibility handler
 -> gateway service
 -> model registry
@@ -26,6 +28,7 @@ The system is OpenAI-compatible first, but it must not become permanently OpenAI
 - `cmd/octyne`: executable entry point. Load config, construct the app, start the server, and handle fatal startup errors.
 - `internal/app`: composition root. Construct the dependency graph: provider configs, adapters, registries, gateway, and server.
 - `internal/config`: load and validate environment configuration once during startup.
+- `internal/auth`: verify Octyne client credentials independently of provider credentials.
 - `internal/server`: own routes, HTTP decoding, basic validation, compatibility response formatting, and status codes.
 - `internal/gateway`: orchestrate chat requests, resolve public models to provider adapters and upstream model IDs, and delegate to adapters.
 - `internal/registry`: map public model names to provider names and upstream model IDs.
@@ -131,6 +134,21 @@ Use `http.NewRequestWithContext` for provider calls. Do not replace request cont
 ## Credentials and BYOK Direction
 
 Octyne credentials and provider credentials are separate. Provider API keys must not be placed in chat JSON bodies. Early configuration may use startup provider credentials, but future BYOK requires request- or account-scoped credential resolution.
+
+The current data plane requires `Authorization: Bearer <key>` for `/v1` and
+all `/v1/*` routes while keeping `GET /health` public. Client keys are loaded
+from the required `OCTYNE_API_KEYS` environment variable, converted to
+fixed-length SHA-256 digests in the static verifier, and compared in constant
+time. Request-ID generation and structured request logging wrap authentication,
+so rejected requests remain traceable without logging headers or credentials.
+The route group is protected as a unit so future `/v1/*` endpoints inherit
+authentication by default.
+
+This configuration-backed verifier is an initial data-plane implementation,
+not persistent key management. Future control-plane storage should retain only
+appropriate key hashes, support identifiers, ownership, revocation, rotation,
+and auditing, and replace the verifier implementation without changing HTTP
+middleware behavior.
 
 Adapters should receive resolved credentials or typed auth options. They should not know whether credentials came from environment variables, a database, request metadata, a secret manager, or organization configuration. Do not log secrets.
 

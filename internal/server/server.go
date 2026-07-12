@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/octyne/octyne/internal/auth"
 	"github.com/octyne/octyne/internal/gateway"
 	"github.com/octyne/octyne/internal/registry"
 )
@@ -22,7 +23,13 @@ type Server struct {
 	logger        *slog.Logger
 }
 
-func New(addr string, logger *slog.Logger, gateway *gateway.Service, modelRegistry *registry.Registry) *Server {
+func New(
+	addr string,
+	logger *slog.Logger,
+	gateway *gateway.Service,
+	modelRegistry *registry.Registry,
+	verifier auth.Verifier,
+) *Server {
 
 	s := &Server{
 		mux:           http.NewServeMux(),
@@ -31,7 +38,7 @@ func New(addr string, logger *slog.Logger, gateway *gateway.Service, modelRegist
 		logger:        logger,
 	}
 
-	s.routes()
+	s.routes(verifier)
 
 	s.httpServer = &http.Server{
 		Addr:              addr,

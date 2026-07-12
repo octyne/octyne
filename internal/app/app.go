@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/octyne/octyne/internal/adapters/openai"
+	"github.com/octyne/octyne/internal/auth"
 	"github.com/octyne/octyne/internal/config"
 	"github.com/octyne/octyne/internal/gateway"
 	"github.com/octyne/octyne/internal/providers"
@@ -16,6 +17,7 @@ type App struct {
 }
 
 func New(appConfig config.Config, logger *slog.Logger) *App {
+	clientKeyVerifier := auth.NewStaticKeyVerifier(appConfig.ClientAPIKeys)
 	providerRegistry := providers.NewRegistry()
 	modelRegistry := registry.NewRegistry()
 
@@ -56,6 +58,7 @@ func New(appConfig config.Config, logger *slog.Logger) *App {
 		logger,
 		gatewayService,
 		modelRegistry,
+		clientKeyVerifier,
 	)
 
 	return &App{

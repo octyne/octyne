@@ -9,6 +9,7 @@ Today it exposes OpenAI-compatible Chat Completions and model-list endpoints and
 - `POST /v1/chat/completions`
 - `GET /v1/models`
 - `GET /health`
+- Bearer-key authentication for all `/v1/*` routes, with public health checks
 - Non-streaming OpenAI-compatible chat completions
 - Streaming OpenAI-compatible chat completions over SSE
 - Complete typed Chat Completions requests, success responses, and streaming chunks
@@ -26,6 +27,7 @@ Native Anthropic and Gemini adapters are planned, but not enabled yet.
 ## Requirements
 
 - Go 1.26+
+- At least one securely generated Octyne client API key
 - Credentials for each hosted upstream you enable; local providers may use an explicitly empty API key
 
 ## Configuration
@@ -33,10 +35,23 @@ Native Anthropic and Gemini adapters are planned, but not enabled yet.
 Create a `.env` file:
 
 ```env
+OCTYNE_API_KEYS=replace_with_output_from_openssl_rand_hex_32
 OCTYNE_PROVIDERS=openai
 OPENAI_API_KEY=your_api_key
 PORT=3000
 ```
+
+Generate an Octyne client key with a cryptographically secure random source:
+
+```bash
+openssl rand -hex 32
+```
+
+`OCTYNE_API_KEYS` is required and accepts a comma-separated list of keys, each
+at least 32 characters long. Multiple keys support separate clients and
+rotation overlap. Keep only necessary keys active, never commit them, and use
+TLS for every non-local deployment. These keys authenticate clients to Octyne;
+they are separate from provider credentials such as `OPENAI_API_KEY`.
 
 `OCTYNE_PROVIDERS` is a comma-separated list of lowercase provider names and
 defaults to `openai`. Each name selects an uppercase environment prefix. For
@@ -101,6 +116,7 @@ curl http://localhost:3000/health
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
+  -H "Authorization: Bearer your_octyne_api_key" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "openai/gpt-5-nano",
@@ -151,6 +167,7 @@ successful stream ends with `data: [DONE]`.
 
 ```bash
 curl -N http://localhost:3000/v1/chat/completions \
+  -H "Authorization: Bearer your_octyne_api_key" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "openai/gpt-5-nano",
@@ -209,8 +226,9 @@ response inventory.
 
 ## Error Compatibility and Request IDs
 
-Chat Completions errors use the OpenAI-compatible JSON envelope with `message`,
-`type`, nullable `param`, and nullable `code` fields. Validation, routing,
+Authentication and Chat Completions errors use the OpenAI-compatible JSON
+envelope with `message`, `type`, nullable `param`, and nullable `code` fields.
+Validation, routing,
 provider status, rate-limit, timeout, and internal failures are mapped to safe
 HTTP statuses and public messages instead of exposing arbitrary Go or upstream
 server details.
@@ -223,7 +241,9 @@ after its HTTP headers have already been sent, Octyne emits an error envelope as
 an SSE `data:` event and does not emit `[DONE]`.
 
 Octyne emits structured JSON logs for server lifecycle and completed requests.
-Request records contain the request ID, method, path, status, response size, and
+Missing, malformed, and incorrect bearer credentials receive `401 Unauthorized`
+with an `authentication_error` body. `GET /health` remains public. Request
+records contain the request ID, method, path, status, response size, and
 duration. Query parameters, headers, and request and response bodies are not
 logged.
 
@@ -232,7 +252,8 @@ logged.
 List the currently registered public models:
 
 ```bash
-curl http://localhost:3000/v1/models
+curl http://localhost:3000/v1/models \
+  -H "Authorization: Bearer your_octyne_api_key"
 ```
 
 Example response:

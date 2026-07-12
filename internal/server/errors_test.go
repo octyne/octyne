@@ -118,6 +118,7 @@ func TestChatHandlerReturnsOpenAIErrorsAndRequestIDs(t *testing.T) {
 				"/v1/chat/completions",
 				strings.NewReader(tt.body),
 			)
+			authenticateRequest(request)
 			recorder := httptest.NewRecorder()
 
 			server.httpServer.Handler.ServeHTTP(recorder, request)
@@ -169,6 +170,7 @@ func TestChatHandlerMapsUpstreamOpenAIError(t *testing.T) {
 		"/v1/chat/completions",
 		strings.NewReader(`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}]}`),
 	)
+	authenticateRequest(request)
 	recorder := httptest.NewRecorder()
 	server.httpServer.Handler.ServeHTTP(recorder, request)
 
@@ -205,6 +207,7 @@ func TestChatHandlerStreamsOpenAIErrorEvent(t *testing.T) {
 		"/v1/chat/completions",
 		strings.NewReader(`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"hello"}],"stream":true}`),
 	)
+	authenticateRequest(request)
 	recorder := httptest.NewRecorder()
 	server.httpServer.Handler.ServeHTTP(recorder, request)
 
