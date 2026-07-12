@@ -1,6 +1,7 @@
 package app
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/octyne/octyne/internal/adapters/openai"
@@ -15,7 +16,7 @@ type App struct {
 	Server *server.Server
 }
 
-func New(appConfig config.Config) *App {
+func New(appConfig config.Config, logger *slog.Logger) *App {
 	providerRegistry := providers.NewRegistry()
 
 	cfg := providers.Config{
@@ -59,6 +60,7 @@ func New(appConfig config.Config) *App {
 
 	httpServer := server.New(
 		":"+appConfig.Port,
+		logger,
 		gatewayService,
 		modelRegistry,
 	)

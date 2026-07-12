@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,12 +13,14 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	godotenv.Load()
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Configuration error: %v", err)
+		logger.Error("load configuration", "error", err)
+		os.Exit(1)
 	}
-	application := app.New(cfg)
+	application := app.New(cfg, logger)
 
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
@@ -28,6 +30,7 @@ func main() {
 	defer stop()
 
 	if err := application.Server.Run(ctx); err != nil {
-		log.Fatal(err)
+		logger.Error("run application", "error", err)
+		os.Exit(1)
 	}
 }

@@ -8,22 +8,10 @@ import (
 
 func (s *Server) routes() {
 	s.mux.HandleFunc("GET /health", healthHandler)
-	s.mux.Handle(
-		"GET /v1/models",
-		withRequestID(http.HandlerFunc(s.modelsHandler)),
-	)
-	s.mux.Handle(
-		"/v1/models",
-		withRequestID(http.HandlerFunc(methodNotAllowedHandler)),
-	)
-	s.mux.Handle(
-		"POST /v1/chat/completions",
-		withRequestID(http.HandlerFunc(s.chatHandler)),
-	)
-	s.mux.Handle(
-		"/v1/chat/completions",
-		withRequestID(http.HandlerFunc(methodNotAllowedHandler)),
-	)
+	s.mux.HandleFunc("GET /v1/models", s.modelsHandler)
+	s.mux.HandleFunc("/v1/models", methodNotAllowedHandler)
+	s.mux.HandleFunc("POST /v1/chat/completions", s.chatHandler)
+	s.mux.HandleFunc("/v1/chat/completions", methodNotAllowedHandler)
 }
 
 func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
