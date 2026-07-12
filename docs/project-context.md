@@ -59,19 +59,18 @@ The OpenAI adapter shares request construction and provider routing across both 
 
 The current OpenAI non-streaming request timeout is 600 seconds. Streaming has no total-duration timeout; it uses a 30-second response-header timeout and remains governed by the incoming request context after the stream begins.
 
-Automated tests cover non-streaming response compatibility, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Default tests use local HTTP test servers and do not call paid provider APIs.
+Automated tests cover typed non-streaming response translation, assistant outputs, token accounting, log probabilities, moderation and service metadata, streaming deltas, multiple choices, explicit-null and usage-only chunks, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Default tests use local HTTP test servers and do not call paid provider APIs.
 
 The OpenAI-compatible Chat Completions request now covers all 37 current top-level parameters, including typed role-specific and multimodal messages, tools and tool choices, structured output, prediction, streaming options, prompt caching, provider-assisted features, and accepted deprecated fields. The compatibility, canonical, and OpenAI provider layers remain distinct, and optional scalar values preserve explicit zero, false, and empty values.
 
-The next implementation priority is completing the non-streaming response and streaming chunk schemas while improving compatibility-layer error handling.
+The current documented non-streaming response and streaming chunk schemas are typed through the OpenAI provider and canonical layers. The next implementation priority is compatibility-layer error handling and request IDs.
 
 ## Near-Term Priorities
 
-1. Complete typed non-streaming response, usage, log probability, and assistant tool-call schemas.
-2. Complete typed streaming delta, tool-call fragment, usage-only chunk, and obfuscation schemas.
-3. Improve canonical error handling and OpenAI-compatible error responses.
-4. Add focused tests for remaining routing and configuration paths.
-5. Move the model registry toward configurable registration before it becomes permanent hardcoding.
+1. Improve canonical error handling and OpenAI-compatible error responses.
+2. Add request IDs and safe provider error metadata.
+3. Add focused tests for remaining routing and configuration paths.
+4. Move the model registry toward configurable registration before it becomes permanent hardcoding.
 
 ## Beta Scope
 

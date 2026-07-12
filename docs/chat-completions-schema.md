@@ -69,13 +69,43 @@ model remain authoritative for feature support.
 
 The request schema includes role-specific developer, system, user, assistant, tool, and deprecated function messages; text, image, input-audio, file, and refusal content; assistant audio references; function and custom tool calls; tool results; typed response formats; typed streaming and prompt-cache options; and explicit assistant null content.
 
-## Remaining response-schema typing
+## Completed non-streaming response schema
 
-Streaming and non-streaming request execution are complete. The remaining work
-is to replace the intentionally minimal response DTOs with complete typed
-OpenAI-compatible response shapes:
+- Top-level `id`, `object`, `created`, `model`, `choices`, `moderation`,
+  `service_tier`, deprecated `system_fingerprint`, and `usage` fields.
+- Nullable assistant content and refusal output.
+- URL-citation annotations and generated audio data.
+- Function and custom tool calls plus deprecated `function_call`.
+- Typed `stop`, `length`, `tool_calls`, `content_filter`, and deprecated
+  `function_call` finish reasons.
+- Typed content and refusal token log probabilities, nullable UTF-8 byte arrays,
+  and top-token alternatives.
+- Prompt, completion, and total token counts; cached, cache-write, audio,
+  reasoning, accepted-prediction, and rejected-prediction token details.
+- Typed input and output moderation success/error outcomes.
 
-- Complete non-streaming response messages, finish reasons, annotations, audio, tool calls, and deprecated function calls.
-- Replace response-side `any` fields with typed usage and content/refusal log probability structures.
-- Complete streaming deltas for refusals, audio, annotations, function/custom tool-call fragments, multiple choices, usage-only chunks, and obfuscation.
-- Preserve successful `[DONE]` behavior and cancellation semantics while expanding streaming schemas.
+## Completed streaming response schema
+
+Coverage follows the current
+[OpenAI Chat Completions streaming-event reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/streaming-events#chat.completion.chunk).
+
+- Top-level chunk identity, choices, moderation, service tier, deprecated system
+  fingerprint, usage, and stream obfuscation.
+- Content, refusal, deprecated function-call, and indexed function tool-call
+  fragments.
+- Multiple simultaneous choices, typed finish reasons, and typed content and
+  refusal log probabilities.
+- Preservation of omitted usage, explicit `usage: null` intermediate chunks,
+  and the final empty-choice usage-only chunk.
+- Successful `[DONE]` framing, cancellation, and single-owner response-body and
+  channel closure behavior.
+
+The current official chunk schema does not define streaming audio, annotation,
+or custom tool-call fragment fields. Recheck the upstream reference before
+adding those shapes if OpenAI expands the streaming schema.
+
+## Remaining compatibility work
+
+Success-response schema coverage is complete for this snapshot. OpenAI-style
+error envelopes, HTTP status mapping, and request IDs remain separate protocol
+compatibility work.

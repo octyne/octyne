@@ -14,7 +14,9 @@ The initial non-streaming and streaming vertical slice is complete.
 - [x] Return OpenAI-compatible SSE when `stream: true`.
 - [x] Add focused tests for non-streaming behavior, streaming parsing, provider setup errors, cancellation, timeout behavior, channel closure, and downstream SSE framing.
 - [x] Complete all current top-level Chat Completions request parameters and their typed nested request shapes.
-- [ ] Improve finish reasons, usage mapping, request IDs, and canonical errors.
+- [x] Complete typed non-streaming response messages, finish reasons, log probabilities, usage, moderation, and service metadata.
+- [x] Complete typed streaming deltas, tool-call fragments, multiple choices, metadata, obfuscation, and usage-only chunks.
+- [ ] Add request IDs and canonical OpenAI-compatible errors.
 - [ ] Expand focused tests for remaining translation, routing, and configuration paths.
 
 ## Milestone 2: OpenAI-Compatible Providers
