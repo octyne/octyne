@@ -45,7 +45,7 @@ Do code changes on focused branches and raise pull requests into `main`; do not 
 
 ## Current Development State
 
-The OpenAI Chat Completions vertical slice is complete for both non-streaming JSON and streaming SSE. It includes the full typed request and response surfaces, request IDs, OpenAI-compatible errors, cancellation, timeout behavior, and focused translation and HTTP tests. The next priority is to replace the package-level hard-coded model map with an injected model registry, preserve public-to-upstream model ID mapping during routing, and then expose that registry through an OpenAI-compatible `GET /v1/models` endpoint.
+The OpenAI Chat Completions vertical slice is complete for both non-streaming JSON and streaming SSE. It includes the full typed request and response surfaces, an injected model registry, public-to-upstream model mapping, `GET /v1/models`, request IDs, OpenAI-compatible errors, explicit server timeouts, graceful shutdown, structured request logging, cancellation, and focused translation and HTTP tests. The next priority is to move startup model registration toward configuration, then add Octyne API authentication separate from provider credentials.
 
 ## Security & Configuration Tips
 

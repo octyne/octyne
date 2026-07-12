@@ -72,18 +72,28 @@ The OpenAI adapter shares request construction and provider routing across both 
 
 The current OpenAI non-streaming request timeout is 600 seconds. Streaming has no total-duration timeout; it uses a 30-second response-header timeout and remains governed by the incoming request context after the stream begins.
 
-Automated tests cover typed non-streaming response translation, assistant outputs, token accounting, log probabilities, moderation and service metadata, streaming deltas, multiple choices, explicit-null and usage-only chunks, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Default tests use local HTTP test servers and do not call paid provider APIs.
+Automated tests cover typed non-streaming response translation, assistant outputs, token accounting, log probabilities, moderation and service metadata, streaming deltas, multiple choices, explicit-null and usage-only chunks, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Server tests additionally cover explicit timeout configuration, graceful active-request draining, structured request fields, request-ID correlation, response accounting, query-value exclusion, and SSE flush preservation. Default tests use local HTTP test servers and do not call paid provider APIs.
 
 The OpenAI-compatible Chat Completions request now covers all 37 current top-level parameters, including typed role-specific and multimodal messages, tools and tool choices, structured output, prediction, streaming options, prompt caching, provider-assisted features, and accepted deprecated fields. The compatibility, canonical, and OpenAI provider layers remain distinct, and optional scalar values preserve explicit zero, false, and empty values.
 
 The current documented non-streaming response and streaming chunk schemas are typed through the OpenAI provider and canonical layers. Chat Completions errors use OpenAI-compatible envelopes and status mapping, every response receives an Octyne request ID, and the same ID is forwarded to OpenAI for correlation without replacing the provider's own diagnostic request ID. Upstream server details are sanitized, and failures after streaming headers are committed are returned as SSE error events without a successful `[DONE]` terminator.
 
+The downstream HTTP server is an explicitly owned `http.Server` with bounded
+header-read, request-read, and idle timeouts. Its global write timeout remains
+disabled so long-running SSE responses are not terminated by a fixed response
+deadline. `SIGINT` and `SIGTERM` trigger graceful shutdown with a 30-second
+drain period before remaining connections are force-closed.
+
+Server lifecycle and request events use structured JSON logging through
+`log/slog`. Completed-request logs include the Octyne request ID, method, path,
+status, response size, and duration. Query parameters, headers, request bodies,
+and response bodies are not logged.
+
 ## Near-Term Priorities
 
 1. Move startup model registrations from the composition root toward configuration-driven registration.
-2. Add explicit server timeouts, graceful shutdown, and structured logging.
-3. Add Octyne API authentication separate from provider credentials.
-4. Begin reusable OpenAI-compatible provider configuration.
+2. Add Octyne API authentication separate from provider credentials.
+3. Begin reusable OpenAI-compatible provider configuration.
 
 ## Beta Scope
 
