@@ -72,10 +72,12 @@ Octyne API keys authenticate clients to Octyne. Provider credentials authenticat
 
 ## Milestone 6: Model API and Registry Evolution
 
-- Add `GET /v1/models`.
-- Return OpenAI-compatible model listings.
-- Move from hardcoded in-memory models toward configuration-driven registration.
-- Preserve room for future metadata: provider mapping, aliases, capabilities, pricing, context window, streaming support, tools, vision, availability, routing policy, deployment ID, and organization visibility.
+- [x] Replace package-level model mappings with an injected application-owned registry.
+- [x] Route public model names to configured upstream model IDs.
+- [ ] Add `GET /v1/models`.
+- [ ] Return OpenAI-compatible model listings.
+- [ ] Move startup model registration toward configuration-driven registration.
+- [ ] Preserve room for future metadata: provider mapping, aliases, capabilities, pricing, context window, streaming support, tools, vision, availability, routing policy, deployment ID, and organization visibility.
 
 ## Milestone 7: Operational Readiness
 

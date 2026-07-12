@@ -40,6 +40,12 @@ Client -> HTTP server -> chat handler -> gateway -> model registry
 -> translated canonical response -> client
 ```
 
+The model registry is constructed in `internal/app` and injected into the
+gateway. Each public model name resolves to a provider and an upstream model ID.
+The gateway forwards that upstream ID for both non-streaming and streaming
+requests, allowing aliases without exposing provider-specific model names as
+the public API contract.
+
 Current routes:
 
 ```http
@@ -67,10 +73,11 @@ The current documented non-streaming response and streaming chunk schemas are ty
 
 ## Near-Term Priorities
 
-1. Move the model registry toward configurable registration before it becomes permanent hardcoding.
-2. Add explicit server timeouts, graceful shutdown, and structured logging.
-3. Add Octyne API authentication separate from provider credentials.
-4. Begin reusable OpenAI-compatible provider configuration.
+1. Expose the injected model registry through an OpenAI-compatible `GET /v1/models` endpoint.
+2. Move startup model registrations from the composition root toward configuration-driven registration.
+3. Add explicit server timeouts, graceful shutdown, and structured logging.
+4. Add Octyne API authentication separate from provider credentials.
+5. Begin reusable OpenAI-compatible provider configuration.
 
 ## Beta Scope
 

@@ -13,7 +13,7 @@ Today it exposes an OpenAI-compatible Chat Completions endpoint and routes reque
 - Complete typed Chat Completions requests, success responses, and streaming chunks
 - OpenAI-compatible error envelopes and per-request `x-request-id` headers
 - OpenAI provider adapter
-- In-memory model registry
+- Injected in-memory model registry with public-to-upstream model mapping
 - Provider abstraction layer
 - Docker and Compose local runtime
 
@@ -184,6 +184,10 @@ Currently registered models:
 - `gpt-5-nano`
 - `gpt-4.1-mini`
 
+Model registry entries resolve a public model name to a provider and upstream
+model ID. This allows future aliases to use stable public names while sending
+the provider-specific identifier upstream.
+
 ## Docker
 
 ```bash
@@ -204,7 +208,7 @@ Useful package boundaries:
 - `internal/gateway`: request orchestration and provider resolution
 - `internal/adapters/openai`: OpenAI request/response translation
 - `internal/providers`: configured upstream providers
-- `internal/registry`: model-to-provider mappings
+- `internal/registry`: public-model-to-provider and upstream-model mappings
 - `internal/types`: provider-neutral DTOs
 
 ## Project Docs
