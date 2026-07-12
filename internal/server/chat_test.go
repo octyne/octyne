@@ -13,6 +13,7 @@ import (
 	"github.com/octyne/octyne/internal/adapters/openai"
 	"github.com/octyne/octyne/internal/gateway"
 	"github.com/octyne/octyne/internal/providers"
+	"github.com/octyne/octyne/internal/registry"
 	"github.com/octyne/octyne/internal/types"
 )
 
@@ -617,7 +618,13 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 		),
 	)
 
-	return New(gateway.New(providerRegistry))
+	modelRegistry := registry.NewRegistry()
+	modelRegistry.Register("gpt-5-nano", registry.Model{
+		Provider: "openai",
+		ModelID:  "gpt-5-nano",
+	})
+
+	return New(gateway.New(providerRegistry, modelRegistry))
 }
 
 func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
