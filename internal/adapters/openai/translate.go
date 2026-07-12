@@ -249,13 +249,61 @@ func toChatCompletionResponse(
 	}
 
 	return types.ChatCompletionResponse{
-		ID:      resp.ID,
-		Object:  resp.Object,
-		Created: resp.Created,
-		Model:   resp.Model,
-		Choices: choices,
-		Usage:   toCompletionUsage(resp.Usage),
+		ID:                resp.ID,
+		Object:            resp.Object,
+		Created:           resp.Created,
+		Model:             resp.Model,
+		Choices:           choices,
+		Moderation:        toChatCompletionModeration(resp.Moderation),
+		ServiceTier:       toResponseServiceTier(resp.ServiceTier),
+		SystemFingerprint: resp.SystemFingerprint,
+		Usage:             toCompletionUsage(resp.Usage),
 	}
+}
+
+func toResponseServiceTier(value *ServiceTier) *types.ServiceTier {
+	if value == nil {
+		return nil
+	}
+	converted := types.ServiceTier(*value)
+	return &converted
+}
+
+func toChatCompletionModeration(value *ChatCompletionModeration) *types.ChatCompletionModeration {
+	if value == nil {
+		return nil
+	}
+	return &types.ChatCompletionModeration{
+		Input:  toModerationOutcome(value.Input),
+		Output: toModerationOutcome(value.Output),
+	}
+}
+
+func toModerationOutcome(value ModerationOutcome) types.ModerationOutcome {
+	converted := types.ModerationOutcome{}
+	if value.Results != nil {
+		converted.Results = &types.ModerationResults{
+			Model: value.Results.Model, Type: value.Results.Type,
+			Results: toModerationResults(value.Results.Results),
+		}
+	}
+	if value.Error != nil {
+		converted.Error = &types.ModerationError{
+			Code: value.Error.Code, Message: value.Error.Message, Type: value.Error.Type,
+		}
+	}
+	return converted
+}
+
+func toModerationResults(values []ModerationResult) []types.ModerationResult {
+	converted := make([]types.ModerationResult, len(values))
+	for i, value := range values {
+		converted[i] = types.ModerationResult{
+			Categories: value.Categories, CategoryAppliedInputTypes: value.CategoryAppliedInputTypes,
+			CategoryScores: value.CategoryScores, Flagged: value.Flagged, Model: value.Model, Type: value.Type,
+		}
+	}
+	return converted
 }
 
 func toResponseMessage(value ResponseMessage) types.ResponseMessage {
