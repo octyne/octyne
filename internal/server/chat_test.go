@@ -632,7 +632,7 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 		ModelID:  "gpt-5-nano",
 	})
 
-	return New(gateway.New(providerRegistry, modelRegistry), modelRegistry)
+	return New(":0", gateway.New(providerRegistry, modelRegistry), modelRegistry)
 }
 
 func TestChatHandlerRejectsEmptyMessages(t *testing.T) {

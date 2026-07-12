@@ -21,7 +21,7 @@ func TestModelsHandlerReturnsRegisteredModels(t *testing.T) {
 		Provider: "openai",
 		ModelID:  "gpt-4.1-mini",
 	})
-	server := New(nil, modelRegistry)
+	server := New(":0", nil, modelRegistry)
 
 	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
 	recorder := httptest.NewRecorder()
@@ -70,7 +70,7 @@ func TestModelsHandlerReturnsRegisteredModels(t *testing.T) {
 }
 
 func TestModelsHandlerReturnsEmptyList(t *testing.T) {
-	server := New(nil, registry.NewRegistry())
+	server := New(":0", nil, registry.NewRegistry())
 
 	request := httptest.NewRequest(http.MethodGet, "/v1/models", nil)
 	recorder := httptest.NewRecorder()
@@ -85,7 +85,7 @@ func TestModelsHandlerReturnsEmptyList(t *testing.T) {
 }
 
 func TestModelsHandlerRejectsWrongMethod(t *testing.T) {
-	server := New(nil, registry.NewRegistry())
+	server := New(":0", nil, registry.NewRegistry())
 
 	request := httptest.NewRequest(http.MethodPost, "/v1/models", nil)
 	recorder := httptest.NewRecorder()
