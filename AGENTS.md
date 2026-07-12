@@ -45,7 +45,7 @@ Do code changes on focused branches and raise pull requests into `main`; do not 
 
 ## Current Development State
 
-The current vertical slice is non-streaming `POST /v1/chat/completions` through the OpenAI adapter. The next priority is OpenAI streaming: extract shared OpenAI chat request construction, force `stream: true` in `StreamChat`, parse SSE incrementally, propagate cancellation, close channels and bodies exactly once, add gateway/server streaming paths, and return OpenAI-compatible SSE from the same endpoint when `req.Stream` is true. Preserve non-streaming behavior while implementing streaming.
+The OpenAI Chat Completions vertical slice is complete for both non-streaming JSON and streaming SSE. It includes the full typed request and response surfaces, request IDs, OpenAI-compatible errors, cancellation, timeout behavior, and focused translation and HTTP tests. The next priority is to replace the package-level hard-coded model map with an injected model registry, preserve public-to-upstream model ID mapping during routing, and then expose that registry through an OpenAI-compatible `GET /v1/models` endpoint.
 
 ## Security & Configuration Tips
 
