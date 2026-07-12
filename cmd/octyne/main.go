@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 	"github.com/octyne/octyne/internal/app"
@@ -16,7 +20,14 @@ func main() {
 	}
 	application := app.New(cfg)
 
-	if err := application.Server.Start(); err != nil {
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	if err := application.Server.Run(ctx); err != nil {
 		log.Fatal(err)
 	}
 }
