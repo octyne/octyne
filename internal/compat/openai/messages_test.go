@@ -8,7 +8,7 @@ import (
 func TestMessagesDecodeRoleSpecificShapes(t *testing.T) {
 	var request ChatCompletionRequest
 	err := json.Unmarshal([]byte(`{
-		"model":"gpt-5-nano",
+		"model":"openai/gpt-5-nano",
 		"messages":[
 			{"role":"developer","content":[{"type":"text","text":"rules","prompt_cache_breakpoint":{"mode":"explicit"}}]},
 			{"role":"system","content":"system"},

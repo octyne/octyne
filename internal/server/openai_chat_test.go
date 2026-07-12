@@ -65,7 +65,7 @@ func TestToCanonicalChatRequest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := openaicompat.ChatCompletionRequest{
-				Model: "gpt-5-nano",
+				Model: "openai/gpt-5-nano",
 				Messages: []openaicompat.Message{
 					{
 						User: &openaicompat.UserMessage{

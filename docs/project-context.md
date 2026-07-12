@@ -43,8 +43,8 @@ Client -> HTTP server -> chat handler -> gateway -> model registry
 The model registry is constructed in `internal/app` and injected into the
 gateway. Each public model name resolves to a provider and an upstream model ID.
 The gateway forwards that upstream ID for both non-streaming and streaming
-requests, allowing aliases without exposing provider-specific model names as
-the public API contract.
+requests. Public model names use the required `provider/model` format so clients
+select a provider explicitly even when multiple providers offer the same model.
 
 Current routes:
 
@@ -56,7 +56,7 @@ POST /v1/chat/completions
 Current low-cost OpenAI development model:
 
 ```text
-gpt-5-nano
+openai/gpt-5-nano
 ```
 
 For `POST /v1/chat/completions`, requests with `stream` omitted or set to `false` return OpenAI-compatible `chat.completion` JSON. Requests with `stream: true` return OpenAI-compatible SSE events in the form `data: <chat.completion.chunk JSON>\n\n`, followed by `data: [DONE]\n\n` after successful completion.

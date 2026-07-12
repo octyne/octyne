@@ -50,7 +50,7 @@ func TestChatHandlerForwardsRoleSpecificMessages(t *testing.T) {
 		_, _ = io.WriteString(w, `{"id":"chatcmpl-rich","object":"chat.completion","created":1,"model":"gpt-5-nano","choices":[]}`)
 	}))
 
-	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"gpt-5-nano","messages":`+messagesJSON+`}`))
+	request := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", strings.NewReader(`{"model":"openai/gpt-5-nano","messages":`+messagesJSON+`}`))
 	recorder := httptest.NewRecorder()
 	server.mux.ServeHTTP(recorder, request)
 	if recorder.Code != http.StatusOK {
@@ -89,6 +89,7 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
+				Model                string             `json:"model"`
 				TopP                 *float64           `json:"top_p"`
 				FrequencyPenalty     *float64           `json:"frequency_penalty"`
 				PresencePenalty      *float64           `json:"presence_penalty"`
@@ -152,6 +153,9 @@ func TestChatHandlerStreamsOpenAICompatibleSSE(t *testing.T) {
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
 				t.Errorf("decode upstream request: %v", err)
 				return
+			}
+			if upstreamRequest.Model != "gpt-5-nano" {
+				t.Errorf("Model = %q, want upstream model %q", upstreamRequest.Model, "gpt-5-nano")
 			}
 
 			if upstreamRequest.TopP == nil {
@@ -357,7 +361,7 @@ data: [DONE]
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}},"response_format":{"type":"json_schema","json_schema":{"name":"answer","schema":{},"strict":false}},"prediction":{"type":"content","content":[{"type":"text","text":"","prompt_cache_breakpoint":{"mode":"explicit"}}]},"moderation":{"model":"omni-moderation-latest","policy":{"input":{"mode":"block"}}},"web_search_options":{"search_context_size":"high","user_location":{"type":"approximate","approximate":{"country":"US"}}},"tools":[{"type":"function","function":{"name":"weather","parameters":{},"strict":false}}],"tool_choice":{"type":"function","function":{"name":"weather"}},"functions":[{"name":"legacy","parameters":{}}],"function_call":{"name":"legacy"}}`,
+			`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"stream":true,"top_p":0,"max_completion_tokens":128,"n":2,"logprobs":true,"top_logprobs":0,"reasoning_effort":"high","seed":0,"store":false,"parallel_tool_calls":false,"safety_identifier":"","prompt_cache_key":"","max_tokens":0,"user":"","prompt_cache_retention":"24h","metadata":{},"service_tier":"flex","prompt_cache_options":{"mode":"explicit","ttl":"30m"},"stop":"END","logit_bias":{},"stream_options":{"include_usage":false,"include_obfuscation":false},"modalities":["text","audio"],"audio":{"format":"mp3","voice":{"id":"voice_123"}},"response_format":{"type":"json_schema","json_schema":{"name":"answer","schema":{},"strict":false}},"prediction":{"type":"content","content":[{"type":"text","text":"","prompt_cache_breakpoint":{"mode":"explicit"}}]},"moderation":{"model":"omni-moderation-latest","policy":{"input":{"mode":"block"}}},"web_search_options":{"search_context_size":"high","user_location":{"type":"approximate","approximate":{"country":"US"}}},"tools":[{"type":"function","function":{"name":"weather","parameters":{},"strict":false}}],"tool_choice":{"type":"function","function":{"name":"weather"}},"functions":[{"name":"legacy","parameters":{}}],"function_call":{"name":"legacy"}}`,
 		),
 	)
 
@@ -408,6 +412,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 			}
 
 			var upstreamRequest struct {
+				Model               string   `json:"model"`
 				Temperature         *float64 `json:"temperature"`
 				TopP                *float64 `json:"top_p"`
 				FrequencyPenalty    *float64 `json:"frequency_penalty"`
@@ -428,6 +433,9 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 			if err := json.Unmarshal(requestBody, &upstreamRequest); err != nil {
 				t.Errorf("decode upstream request: %v", err)
 				return
+			}
+			if upstreamRequest.Model != "gpt-5-nano" {
+				t.Errorf("Model = %q, want upstream model %q", upstreamRequest.Model, "gpt-5-nano")
 			}
 
 			if upstreamRequest.Temperature == nil {
@@ -542,7 +550,7 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0,"logprobs":false,"verbosity":"medium"}`,
+			`{"model":"openai/gpt-5-nano","messages":[{"role":"user","content":"Hello"}],"temperature":0,"frequency_penalty":0,"presence_penalty":0,"logprobs":false,"verbosity":"medium"}`,
 		),
 	)
 
@@ -619,7 +627,7 @@ func newTestServer(t *testing.T, upstreamHandler http.Handler) *Server {
 	)
 
 	modelRegistry := registry.NewRegistry()
-	modelRegistry.Register("gpt-5-nano", registry.Model{
+	modelRegistry.Register("openai/gpt-5-nano", registry.Model{
 		Provider: "openai",
 		ModelID:  "gpt-5-nano",
 	})
@@ -639,7 +647,7 @@ func TestChatHandlerRejectsEmptyMessages(t *testing.T) {
 		http.MethodPost,
 		"/v1/chat/completions",
 		strings.NewReader(
-			`{"model":"gpt-5-nano","messages":[]}`,
+			`{"model":"openai/gpt-5-nano","messages":[]}`,
 		),
 	)
 
