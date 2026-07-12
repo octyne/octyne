@@ -16,7 +16,7 @@ func main() {
 	}
 	application := app.New(cfg)
 
-	if err := application.Server.Start(":" + cfg.Port); err != nil {
+	if err := application.Server.Start(); err != nil {
 		log.Fatal(err)
 	}
 }
