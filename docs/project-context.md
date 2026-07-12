@@ -50,8 +50,15 @@ Current routes:
 
 ```http
 GET /health
+GET /v1/models
 POST /v1/chat/completions
 ```
+
+`GET /v1/models` reads the application-owned registry directly and returns the
+OpenAI-compatible model-list envelope. Model IDs are the public
+`provider/model` names clients use for routing, and `owned_by` identifies the
+configured provider. Entries are sorted by public model ID for deterministic
+responses.
 
 Current low-cost OpenAI development model:
 
@@ -73,11 +80,10 @@ The current documented non-streaming response and streaming chunk schemas are ty
 
 ## Near-Term Priorities
 
-1. Expose the injected model registry through an OpenAI-compatible `GET /v1/models` endpoint.
-2. Move startup model registrations from the composition root toward configuration-driven registration.
-3. Add explicit server timeouts, graceful shutdown, and structured logging.
-4. Add Octyne API authentication separate from provider credentials.
-5. Begin reusable OpenAI-compatible provider configuration.
+1. Move startup model registrations from the composition root toward configuration-driven registration.
+2. Add explicit server timeouts, graceful shutdown, and structured logging.
+3. Add Octyne API authentication separate from provider credentials.
+4. Begin reusable OpenAI-compatible provider configuration.
 
 ## Beta Scope
 

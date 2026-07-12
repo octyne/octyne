@@ -59,6 +59,7 @@ func New(appConfig config.Config) *App {
 
 	httpServer := server.New(
 		gatewayService,
+		modelRegistry,
 	)
 
 	return &App{

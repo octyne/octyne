@@ -9,6 +9,14 @@ import (
 func (s *Server) routes() {
 	s.mux.HandleFunc("GET /health", healthHandler)
 	s.mux.Handle(
+		"GET /v1/models",
+		withRequestID(http.HandlerFunc(s.modelsHandler)),
+	)
+	s.mux.Handle(
+		"/v1/models",
+		withRequestID(http.HandlerFunc(methodNotAllowedHandler)),
+	)
+	s.mux.Handle(
 		"POST /v1/chat/completions",
 		withRequestID(http.HandlerFunc(s.chatHandler)),
 	)
