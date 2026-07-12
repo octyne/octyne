@@ -580,7 +580,8 @@ func TestChatHandlerReturnsOpenAICompatibleJSON(t *testing.T) {
 	choice := response.Choices[0]
 	if choice.Index != 0 ||
 		choice.Message.Role != "assistant" ||
-		choice.Message.Content != "Hello" ||
+		choice.Message.Content == nil ||
+		*choice.Message.Content != "Hello" ||
 		choice.FinishReason == nil ||
 		*choice.FinishReason != "stop" {
 		t.Errorf("unexpected choice: %+v", choice)

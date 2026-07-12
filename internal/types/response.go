@@ -10,6 +10,52 @@ const (
 	FinishReasonFunctionCall  FinishReason = "function_call"
 )
 
+type URLCitation struct {
+	EndIndex   int    `json:"end_index"`
+	StartIndex int    `json:"start_index"`
+	Title      string `json:"title"`
+	URL        string `json:"url"`
+}
+
+type Annotation struct {
+	Type        string      `json:"type"`
+	URLCitation URLCitation `json:"url_citation"`
+}
+
+type ChatCompletionAudio struct {
+	ID         string `json:"id"`
+	Data       string `json:"data"`
+	ExpiresAt  int64  `json:"expires_at"`
+	Transcript string `json:"transcript"`
+}
+
+type ResponseFunctionCall struct {
+	Arguments string `json:"arguments"`
+	Name      string `json:"name"`
+}
+
+type ResponseCustomCall struct {
+	Input string `json:"input"`
+	Name  string `json:"name"`
+}
+
+type ResponseToolCall struct {
+	ID       string                `json:"id"`
+	Type     string                `json:"type"`
+	Function *ResponseFunctionCall `json:"function,omitempty"`
+	Custom   *ResponseCustomCall   `json:"custom,omitempty"`
+}
+
+type ResponseMessage struct {
+	Role         string                `json:"role"`
+	Content      *string               `json:"content"`
+	Refusal      *string               `json:"refusal"`
+	Annotations  *[]Annotation         `json:"annotations,omitempty"`
+	Audio        *ChatCompletionAudio  `json:"audio,omitempty"`
+	FunctionCall *ResponseFunctionCall `json:"function_call,omitempty"`
+	ToolCalls    *[]ResponseToolCall   `json:"tool_calls,omitempty"`
+}
+
 type TopLogprob struct {
 	Token   string  `json:"token"`
 	Bytes   []int   `json:"bytes"`
