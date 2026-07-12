@@ -12,16 +12,18 @@ import (
 
 type Service struct {
 	providers *providers.Registry
+	models    *registry.Registry
 }
 
-func New(providers *providers.Registry) *Service {
+func New(providers *providers.Registry, models *registry.Registry) *Service {
 	return &Service{
 		providers: providers,
+		models:    models,
 	}
 }
 
 func (s *Service) resolveAdapter(modelName string) (adapters.Adapter, error) {
-	model, ok := registry.Get(modelName)
+	model, ok := s.models.Get(modelName)
 	if !ok {
 		param := "model"
 		code := "model_not_found"

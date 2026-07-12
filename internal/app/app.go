@@ -7,6 +7,7 @@ import (
 	"github.com/octyne/octyne/internal/config"
 	"github.com/octyne/octyne/internal/gateway"
 	"github.com/octyne/octyne/internal/providers"
+	"github.com/octyne/octyne/internal/registry"
 	"github.com/octyne/octyne/internal/server"
 )
 
@@ -33,8 +34,27 @@ func New(appConfig config.Config) *App {
 		),
 	)
 
+	modelRegistry := registry.NewRegistry()
+
+	modelRegistry.Register(
+		"gpt-4.1-mini",
+		registry.Model{
+			Provider: "openai",
+			ModelID:  "gpt-4.1-mini",
+		},
+	)
+
+	modelRegistry.Register(
+		"gpt-5-nano",
+		registry.Model{
+			Provider: "openai",
+			ModelID:  "gpt-5-nano",
+		},
+	)
+
 	gatewayService := gateway.New(
 		providerRegistry,
+		modelRegistry,
 	)
 
 	httpServer := server.New(

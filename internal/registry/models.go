@@ -5,18 +5,21 @@ type Model struct {
 	ModelID  string
 }
 
-var models = map[string]Model{
-	"gpt-4.1-mini": {
-		Provider: "openai",
-		ModelID:  "gpt-4.1-mini",
-	},
-	"gpt-5-nano": {
-		Provider: "openai",
-		ModelID:  "gpt-5-nano",
-	},
+type Registry struct {
+	models map[string]Model
 }
 
-func Get(name string) (Model, bool) {
-	model, ok := models[name]
+func NewRegistry() *Registry {
+	return &Registry{
+		models: make(map[string]Model),
+	}
+}
+
+func (r *Registry) Register(name string, model Model) {
+	r.models[name] = model
+}
+
+func (r *Registry) Get(name string) (Model, bool) {
+	model, ok := r.models[name]
 	return model, ok
 }
