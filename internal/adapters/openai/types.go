@@ -264,8 +264,11 @@ type ChatCompletionResponse struct {
 }
 
 type Delta struct {
-	Role    *string `json:"role,omitempty"`
-	Content *string `json:"content,omitempty"`
+	Content      *string             `json:"content,omitempty"`
+	FunctionCall *StreamFunctionCall `json:"function_call,omitempty"`
+	Refusal      *string             `json:"refusal,omitempty"`
+	Role         *string             `json:"role,omitempty"`
+	ToolCalls    *[]StreamToolCall   `json:"tool_calls,omitempty"`
 }
 
 type ChunkChoice struct {
@@ -276,10 +279,15 @@ type ChunkChoice struct {
 }
 
 type ChatCompletionChunk struct {
-	ID      string           `json:"id"`
-	Object  string           `json:"object"`
-	Created int64            `json:"created"`
-	Model   string           `json:"model"`
-	Choices []ChunkChoice    `json:"choices"`
-	Usage   *CompletionUsage `json:"usage,omitempty"`
+	ID                string                    `json:"id"`
+	Object            string                    `json:"object"`
+	Created           int64                     `json:"created"`
+	Model             string                    `json:"model"`
+	Choices           []ChunkChoice             `json:"choices"`
+	Moderation        *ChatCompletionModeration `json:"moderation,omitempty"`
+	Obfuscation       *string                   `json:"obfuscation,omitempty"`
+	ServiceTier       *ServiceTier              `json:"service_tier,omitempty"`
+	SystemFingerprint *string                   `json:"system_fingerprint,omitempty"`
+	Usage             *CompletionUsage          `json:"-"`
+	UsagePresent      bool                      `json:"-"`
 }
