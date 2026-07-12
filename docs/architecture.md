@@ -52,12 +52,15 @@ gatewayService := gateway.New(
 httpServer := server.New(gatewayService)
 ```
 
-Model and provider registrations happen during application construction. The
-gateway receives both registries as dependencies and does not read package-level
-model state. A model registry entry contains the provider name and upstream
-model ID. Public names use the required `provider/model` format so the provider
-choice is explicit, while the upstream identifier sent to that provider can
-differ from the public name.
+Environment configuration supplies an ordered set of named provider definitions,
+including base URLs, credentials, timeout policies, and upstream model IDs.
+Application construction creates one reusable OpenAI-compatible adapter per
+configured provider and registers its models. The gateway receives both
+registries as dependencies and does not read package-level model state. A model
+registry entry contains the provider name and upstream model ID. Public names
+use the required `provider/model` format so the provider choice is explicit,
+while the upstream identifier sent to that provider can differ from the public
+name.
 
 Main should remain small. The server should not construct the gateway, the gateway should not construct registries, and adapters should not read environment variables.
 

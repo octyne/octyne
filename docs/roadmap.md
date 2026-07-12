@@ -25,10 +25,15 @@ Reuse the OpenAI-compatible adapter where practical for:
 
 - OpenAI
 - Azure OpenAI
-- OpenRouter
 - Ollama
 - vLLM
 - LM Studio
+
+Completed foundation:
+
+- [x] Load named OpenAI-compatible providers and models from environment configuration.
+- [x] Make base URLs, credentials, and non-streaming and streaming-header timeouts configurable per provider.
+- [x] Prove the shared adapter path with an unauthenticated local Ollama configuration.
 
 Provider-specific differences should be configuration or focused extensions, not copied adapters. Differences may include base URL, authentication, headers, query parameters, deployment paths, API versions, and unsupported fields.
 
@@ -76,7 +81,7 @@ Octyne API keys authenticate clients to Octyne. Provider credentials authenticat
 - [x] Route provider-qualified public model names to configured upstream model IDs.
 - [x] Add `GET /v1/models`.
 - [x] Return OpenAI-compatible model listings.
-- [ ] Move startup model registration toward configuration-driven registration.
+- [x] Move startup model registration toward configuration-driven registration.
 - [ ] Preserve room for future metadata: provider mapping, aliases, capabilities, pricing, context window, streaming support, tools, vision, availability, routing policy, deployment ID, and organization visibility.
 
 ## Milestone 7: Operational Readiness

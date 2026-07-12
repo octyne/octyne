@@ -26,22 +26,24 @@ Phase 1 exposes an OpenAI-compatible API, starting with:
 POST /v1/chat/completions
 ```
 
-OpenAI, Anthropic, and Gemini should initially be reachable through the OpenAI-compatible Octyne API. OpenAI-compatible upstreams such as Azure OpenAI, OpenRouter, Ollama, vLLM, and LM Studio should reuse the same protocol implementation where practical rather than copying adapter code.
+OpenAI, Anthropic, and Gemini should initially be reachable through the OpenAI-compatible Octyne API. Direct OpenAI-compatible upstreams such as Azure OpenAI, Ollama, vLLM, and LM Studio should reuse the same protocol implementation where practical rather than copying adapter code. Octyne is itself the gateway and routing product; competing aggregation gateways are not upstream product targets.
 
 Long term, Octyne should expose multiple compatibility APIs, including OpenAI-compatible, Anthropic-compatible, and Gemini-compatible APIs. External compatibility formats must remain separate from internal canonical models.
 
 ## Current State
 
-The current working vertical slice supports both non-streaming and streaming chat completions through the OpenAI adapter:
+The current working vertical slice supports both non-streaming and streaming chat completions through the reusable OpenAI-compatible adapter:
 
 ```text
 Client -> HTTP server -> chat handler -> gateway -> model registry
--> provider registry -> OpenAI adapter -> OpenAI API
+-> provider registry -> OpenAI-compatible adapter -> configured upstream
 -> translated canonical response -> client
 ```
 
-The model registry is constructed in `internal/app` and injected into the
-gateway. Each public model name resolves to a provider and an upstream model ID.
+Provider definitions are loaded from environment configuration and constructed
+in `internal/app`. Their configured models populate the model registry, which is
+injected into the gateway. Each public model name resolves to a provider and an
+upstream model ID.
 The gateway forwards that upstream ID for both non-streaming and streaming
 requests. Public model names use the required `provider/model` format so clients
 select a provider explicitly even when multiple providers offer the same model.
@@ -68,15 +70,18 @@ openai/gpt-5-nano
 
 For `POST /v1/chat/completions`, requests with `stream` omitted or set to `false` return OpenAI-compatible `chat.completion` JSON. Requests with `stream: true` return OpenAI-compatible SSE events in the form `data: <chat.completion.chunk JSON>\n\n`, followed by `data: [DONE]\n\n` after successful completion.
 
-The OpenAI adapter shares request construction and provider routing across both modes while keeping response handling separate. Non-streaming decodes one JSON response. Streaming reads SSE incrementally, propagates request cancellation, and gives the stream goroutine sole ownership of closing the upstream body and output channel.
+The OpenAI-compatible adapter shares request construction and provider routing across both modes while keeping response handling separate. Non-streaming decodes one JSON response. Streaming reads SSE incrementally, propagates request cancellation, and gives the stream goroutine sole ownership of closing the upstream body and output channel.
 
-The current OpenAI non-streaming request timeout is 600 seconds. Streaming has no total-duration timeout; it uses a 30-second response-header timeout and remains governed by the incoming request context after the stream begins.
+Each provider defaults to a 600-second non-streaming request timeout. Streaming
+has no total-duration timeout and defaults to a 30-second response-header
+timeout; both policies are configurable per provider. A stream remains governed
+by the incoming request context after it begins.
 
 Automated tests cover typed non-streaming response translation, assistant outputs, token accounting, log probabilities, moderation and service metadata, streaming deltas, multiple choices, explicit-null and usage-only chunks, downstream SSE framing, upstream stream parsing, `[DONE]`, malformed chunks, provider setup errors, cancellation, timeout behavior, and response-body closure. Server tests additionally cover explicit timeout configuration, graceful active-request draining, structured request fields, request-ID correlation, response accounting, query-value exclusion, and SSE flush preservation. Default tests use local HTTP test servers and do not call paid provider APIs.
 
 The OpenAI-compatible Chat Completions request now covers all 37 current top-level parameters, including typed role-specific and multimodal messages, tools and tool choices, structured output, prediction, streaming options, prompt caching, provider-assisted features, and accepted deprecated fields. The compatibility, canonical, and OpenAI provider layers remain distinct, and optional scalar values preserve explicit zero, false, and empty values.
 
-The current documented non-streaming response and streaming chunk schemas are typed through the OpenAI provider and canonical layers. Chat Completions errors use OpenAI-compatible envelopes and status mapping, every response receives an Octyne request ID, and the same ID is forwarded to OpenAI for correlation without replacing the provider's own diagnostic request ID. Upstream server details are sanitized, and failures after streaming headers are committed are returned as SSE error events without a successful `[DONE]` terminator.
+The current documented non-streaming response and streaming chunk schemas are typed through the OpenAI provider and canonical layers. Chat Completions errors use OpenAI-compatible envelopes and status mapping, every response receives an Octyne request ID, and the same ID is forwarded upstream for correlation without replacing the provider's own diagnostic request ID. Upstream server details are sanitized, and failures after streaming headers are committed are returned as SSE error events without a successful `[DONE]` terminator.
 
 The downstream HTTP server is an explicitly owned `http.Server` with bounded
 header-read, request-read, and idle timeouts. Its global write timeout remains
@@ -91,9 +96,9 @@ and response bodies are not logged.
 
 ## Near-Term Priorities
 
-1. Move startup model registrations from the composition root toward configuration-driven registration.
-2. Add Octyne API authentication separate from provider credentials.
-3. Begin reusable OpenAI-compatible provider configuration.
+1. Add Octyne API authentication separate from provider credentials.
+2. Continue direct-provider support beyond the reusable OpenAI-compatible path.
+3. Evolve environment-backed provider configuration toward future control-plane storage and credential resolution.
 
 ## Beta Scope
 
