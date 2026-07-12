@@ -70,6 +70,13 @@ The current OpenAI-compatible request and canonical DTOs may look similar, but t
 
 The Chat Completions request boundary currently covers all 37 top-level OpenAI parameters. Stable nested shapes use typed structs and tagged unions; `json.RawMessage` is reserved for genuinely arbitrary user-provided JSON Schema and function-parameter payloads. Role-specific messages are decoded at the compatibility boundary and normalized into canonical chat messages before provider translation.
 
+The Chat Completions success-response path uses provider-specific OpenAI DTOs
+and provider-neutral canonical DTOs. Non-streaming responses type assistant
+outputs, finish reasons, log probabilities, token usage, moderation, and service
+metadata. Streaming responses additionally preserve partial function calls,
+multiple choices, obfuscation, and the distinction between omitted usage,
+explicit `usage: null`, and the final usage-only chunk.
+
 ## Providers and Adapters
 
 A provider is a configured upstream. An adapter is a protocol implementation. Multiple providers may share one adapter when their protocol is compatible.

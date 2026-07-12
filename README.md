@@ -10,6 +10,7 @@ Today it exposes an OpenAI-compatible Chat Completions endpoint and routes reque
 - `GET /health`
 - Non-streaming OpenAI-compatible chat completions
 - Streaming OpenAI-compatible chat completions over SSE
+- Complete typed Chat Completions success responses and streaming chunks
 - OpenAI provider adapter
 - In-memory model registry
 - Provider abstraction layer
@@ -74,15 +75,26 @@ Example response shape:
 ```json
 {
   "id": "...",
+  "object": "chat.completion",
+  "created": 1234567890,
   "model": "gpt-5-nano",
   "choices": [
     {
+      "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Hello!"
-      }
+        "content": "Hello!",
+        "refusal": null
+      },
+      "finish_reason": "stop",
+      "logprobs": null
     }
-  ]
+  ],
+  "usage": {
+    "prompt_tokens": 8,
+    "completion_tokens": 2,
+    "total_tokens": 10
+  }
 }
 ```
 
@@ -132,6 +144,22 @@ otherwise Octyne should return a clear compatibility error rather than silently
 changing or dropping the request. Provider-native compatibility APIs should
 expose that API's own parameter names and deprecation rules instead of inheriting
 OpenAI-only legacy fields.
+
+## Response Compatibility
+
+Successful non-streaming responses preserve the current typed Chat Completions
+schema, including nullable assistant content, refusals, URL citations, audio,
+function and custom tool calls, deprecated function calls, finish reasons,
+content and refusal log probabilities, complete token usage details, moderation,
+service tier, and system fingerprint metadata.
+
+Streaming responses preserve typed content, refusal, deprecated function-call,
+and indexed function tool-call fragments; multiple choices; log probabilities;
+moderation and service metadata; obfuscation; explicit-null intermediate usage;
+and the final usage-only chunk. A successful stream still ends with
+`data: [DONE]`. See the
+[Chat Completions schema status](docs/chat-completions-schema.md) for the full
+response inventory.
 
 ## Supported Models
 
