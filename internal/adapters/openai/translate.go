@@ -246,8 +246,8 @@ func toChatCompletionResponse(
 				Role:    choice.Message.Role,
 				Content: choice.Message.Content,
 			},
-			FinishReason: choice.FinishReason,
-			Logprobs:     choice.Logprobs,
+			FinishReason: toFinishReason(choice.FinishReason),
+			Logprobs:     toChatLogprobs(choice.Logprobs),
 		})
 	}
 
@@ -257,7 +257,7 @@ func toChatCompletionResponse(
 		Created: resp.Created,
 		Model:   resp.Model,
 		Choices: choices,
-		Usage:   resp.Usage,
+		Usage:   toCompletionUsage(resp.Usage),
 	}
 }
 
@@ -273,8 +273,8 @@ func toStreamChunk(
 				Role:    choice.Delta.Role,
 				Content: choice.Delta.Content,
 			},
-			FinishReason: choice.FinishReason,
-			Logprobs:     choice.Logprobs,
+			FinishReason: toFinishReason(choice.FinishReason),
+			Logprobs:     toChatLogprobs(choice.Logprobs),
 		})
 	}
 
@@ -284,6 +284,82 @@ func toStreamChunk(
 		Created: chunk.Created,
 		Model:   chunk.Model,
 		Choices: choices,
-		Usage:   chunk.Usage,
+		Usage:   toCompletionUsage(chunk.Usage),
 	}
+}
+
+func toFinishReason(value *FinishReason) *types.FinishReason {
+	if value == nil {
+		return nil
+	}
+	converted := types.FinishReason(*value)
+	return &converted
+}
+
+func toChatLogprobs(value *ChatLogprobs) *types.ChatLogprobs {
+	if value == nil {
+		return nil
+	}
+	return &types.ChatLogprobs{
+		Content: toTokenLogprobs(value.Content),
+		Refusal: toTokenLogprobs(value.Refusal),
+	}
+}
+
+func toTokenLogprobs(values []TokenLogprob) []types.TokenLogprob {
+	if values == nil {
+		return nil
+	}
+	converted := make([]types.TokenLogprob, len(values))
+	for i, value := range values {
+		converted[i] = types.TokenLogprob{
+			Token:       value.Token,
+			Bytes:       value.Bytes,
+			Logprob:     value.Logprob,
+			TopLogprobs: toTopLogprobs(value.TopLogprobs),
+		}
+	}
+	return converted
+}
+
+func toTopLogprobs(values []TopLogprob) []types.TopLogprob {
+	if values == nil {
+		return nil
+	}
+	converted := make([]types.TopLogprob, len(values))
+	for i, value := range values {
+		converted[i] = types.TopLogprob{
+			Token: value.Token, Bytes: value.Bytes, Logprob: value.Logprob,
+		}
+	}
+	return converted
+}
+
+func toCompletionUsage(value *CompletionUsage) *types.CompletionUsage {
+	if value == nil {
+		return nil
+	}
+	converted := &types.CompletionUsage{
+		CompletionTokens: value.CompletionTokens,
+		PromptTokens:     value.PromptTokens,
+		TotalTokens:      value.TotalTokens,
+	}
+	if value.CompletionTokensDetails != nil {
+		details := value.CompletionTokensDetails
+		converted.CompletionTokensDetails = &types.CompletionTokensDetails{
+			AcceptedPredictionTokens: details.AcceptedPredictionTokens,
+			AudioTokens:              details.AudioTokens,
+			ReasoningTokens:          details.ReasoningTokens,
+			RejectedPredictionTokens: details.RejectedPredictionTokens,
+		}
+	}
+	if value.PromptTokensDetails != nil {
+		details := value.PromptTokensDetails
+		converted.PromptTokensDetails = &types.PromptTokensDetails{
+			AudioTokens:      details.AudioTokens,
+			CacheWriteTokens: details.CacheWriteTokens,
+			CachedTokens:     details.CachedTokens,
+		}
+	}
+	return converted
 }

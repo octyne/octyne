@@ -250,19 +250,19 @@ type ChatCompletionRequest struct {
 }
 
 type Choice struct {
-	Index        int     `json:"index"`
-	Message      Message `json:"message"`
-	FinishReason *string `json:"finish_reason"`
-	Logprobs     any     `json:"logprobs"`
+	Index        int           `json:"index"`
+	Message      Message       `json:"message"`
+	FinishReason *FinishReason `json:"finish_reason"`
+	Logprobs     *ChatLogprobs `json:"logprobs"`
 }
 
 type ChatCompletionResponse struct {
-	ID      string   `json:"id"`
-	Object  string   `json:"object"`
-	Created int64    `json:"created"`
-	Model   string   `json:"model"`
-	Choices []Choice `json:"choices"`
-	Usage   any      `json:"usage,omitempty"`
+	ID      string           `json:"id"`
+	Object  string           `json:"object"`
+	Created int64            `json:"created"`
+	Model   string           `json:"model"`
+	Choices []Choice         `json:"choices"`
+	Usage   *CompletionUsage `json:"usage,omitempty"`
 }
 
 type Delta struct {
@@ -271,17 +271,17 @@ type Delta struct {
 }
 
 type ChunkChoice struct {
-	Index        int     `json:"index"`
-	Delta        Delta   `json:"delta"`
-	FinishReason *string `json:"finish_reason"`
-	Logprobs     any     `json:"logprobs"`
+	Index        int           `json:"index"`
+	Delta        Delta         `json:"delta"`
+	FinishReason *FinishReason `json:"finish_reason"`
+	Logprobs     *ChatLogprobs `json:"logprobs"`
 }
 
 type ChatCompletionChunk struct {
-	ID      string        `json:"id"`
-	Object  string        `json:"object"`
-	Created int64         `json:"created"`
-	Model   string        `json:"model"`
-	Choices []ChunkChoice `json:"choices"`
-	Usage   any           `json:"usage,omitempty"`
+	ID      string           `json:"id"`
+	Object  string           `json:"object"`
+	Created int64            `json:"created"`
+	Model   string           `json:"model"`
+	Choices []ChunkChoice    `json:"choices"`
+	Usage   *CompletionUsage `json:"usage,omitempty"`
 }
