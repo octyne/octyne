@@ -2,7 +2,7 @@
 
 Octyne is a lightweight AI gateway written in Go.
 
-Today it exposes OpenAI-compatible Chat Completions and model-list endpoints and routes requests through the configured OpenAI provider. The project is designed to grow into a broader AI infrastructure platform for routing, credentials, usage tracking, observability, governance, and multiple provider APIs.
+Today it exposes OpenAI-compatible Chat Completions and model-list endpoints and routes requests through configured OpenAI-compatible upstream providers. The project is designed to grow into a broader AI infrastructure platform for routing, credentials, usage tracking, observability, governance, and multiple provider APIs.
 
 ## Current Support
 
@@ -16,28 +16,66 @@ Today it exposes OpenAI-compatible Chat Completions and model-list endpoints and
 - Explicit downstream HTTP server timeouts with SSE-safe write behavior
 - Graceful shutdown on interrupt and termination signals
 - Structured JSON lifecycle and request logging
-- OpenAI provider adapter
+- Configuration-driven OpenAI-compatible upstreams, with OpenAI defaults and an Ollama local-runtime path
 - Injected in-memory model registry with public-to-upstream model mapping
 - Provider abstraction layer
 - Docker and Compose local runtime
 
-Additional providers are planned, but not enabled yet.
+Native Anthropic and Gemini adapters are planned, but not enabled yet.
 
 ## Requirements
 
 - Go 1.26+
-- OpenAI API key
+- Credentials for each hosted upstream you enable; local providers may use an explicitly empty API key
 
 ## Configuration
 
 Create a `.env` file:
 
 ```env
+OCTYNE_PROVIDERS=openai
 OPENAI_API_KEY=your_api_key
 PORT=3000
 ```
 
-`PORT` is optional and defaults to `3000`.
+`OCTYNE_PROVIDERS` is a comma-separated list of lowercase provider names and
+defaults to `openai`. Each name selects an uppercase environment prefix. For
+example, `azure-openai` uses `AZURE_OPENAI_*` variables.
+
+Each configured provider supports:
+
+```text
+<PREFIX>_BASE_URL
+<PREFIX>_API_KEY
+<PREFIX>_MODELS
+<PREFIX>_NON_STREAMING_TIMEOUT
+<PREFIX>_STREAMING_RESPONSE_HEADER_TIMEOUT
+```
+
+The API-key variable must be declared, but may be empty for an unauthenticated
+local provider. Models are comma-separated upstream IDs; Octyne exposes each as
+`provider/upstream-model`. Timeouts use Go duration syntax such as `10m` or
+`30s` and default to 10 minutes and 30 seconds respectively.
+
+OpenAI defaults to `https://api.openai.com/v1` and the current development
+models when its base URL or model list is omitted. `PORT` defaults to `3000`.
+
+To enable local Ollama alongside OpenAI:
+
+```env
+OCTYNE_PROVIDERS=openai,ollama
+
+OPENAI_API_KEY=your_api_key
+
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_API_KEY=
+OLLAMA_MODELS=llama3.2
+OLLAMA_NON_STREAMING_TIMEOUT=10m
+OLLAMA_STREAMING_RESPONSE_HEADER_TIMEOUT=30s
+```
+
+This registers `ollama/llama3.2` and sends `llama3.2` to Ollama's
+OpenAI-compatible endpoint.
 
 ## Run Locally
 
@@ -220,12 +258,13 @@ Example response:
 ```
 
 The `created` value is `0` until registry entries carry authoritative creation
-timestamps. Currently registered models are:
+timestamps. With the default OpenAI model configuration, registered models are:
 
 - `openai/gpt-5-nano`
 - `openai/gpt-4.1-mini`
 
-Public model names use the required `provider/model` format. Registry entries
+Configured models are registered at startup. Public model names use the
+required `provider/model` format. Registry entries
 resolve those names to a provider and its upstream model ID, so clients can
 select the provider explicitly while adapters receive provider-native IDs.
 
@@ -247,7 +286,7 @@ Useful package boundaries:
 
 - `internal/server`: HTTP routes and compatibility response formatting
 - `internal/gateway`: request orchestration and provider resolution
-- `internal/adapters/openai`: OpenAI request/response translation
+- `internal/adapters/openai`: reusable OpenAI-compatible upstream translation
 - `internal/providers`: configured upstream providers
 - `internal/registry`: public-model-to-provider and upstream-model mappings
 - `internal/types`: provider-neutral DTOs
